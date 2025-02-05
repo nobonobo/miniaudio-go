@@ -1,0 +1,28 @@
+--- 
+GENERATOR: 
+  PackageName: miniaudioamd64
+  PackageDescription: "Package miniaudio provides Go bindings for libminiaudio."
+  PackageLicense: "Copyright 2023 David Reid"
+  Includes: ["../pkg/miniaudio/miniaudio.h"]
+  FlagGroups:
+    - {name: "LDFLAGS", traits: ["linux"], flags: ["-lpthread","-lm","-ldl"]}
+  Options:
+    SafeStrings: true
+
+PARSER: 
+  IncludePaths: []
+  SourcesPaths: ["pkg/miniaudio/miniaudio.h"]
+  Arch: amd64
+
+TRANSLATOR:
+  ConstCharIsString: true
+  ConstUCharIsString: true
+  ConstRules:
+    defines: eval
+  Rules: 
+    global: 
+      - {transform: lower}
+      # other transforms skipped
+      - {transform: export}
+    private:
+      - {transform: unexport}
