@@ -2,12 +2,7 @@ package miniaudio
 
 import "unsafe"
 
-// Example placeholders for undefined types
-type (
-	maDeviceID        struct{}
-	maChannel         struct{}
-	maResamplerConfig struct{}
-)
+type Channel uint8
 
 // ma_device_config
 type DeviceConfig struct {
@@ -24,30 +19,33 @@ type DeviceConfig struct {
 	DataCallback              uintptr            // ma_device_data_proc (function pointer)
 	NotificationCallback      uintptr            // ma_device_notification_proc (function pointer)
 	StopCallback              uintptr            // ma_stop_proc (function pointer)
-	PUserData                 unsafe.Pointer     // void* equivalent
-	Resampling                maResamplerConfig
+	PUserData                 unsafe.Pointer     // void*
+	Resampling                ResamplerConfig    // ma_resampler_config
 
 	Playback struct {
-		PDeviceID                       *maDeviceID
-		Format                          int32  // ma_format (assumed int32)
-		Channels                        uint32 // ma_uint32
-		PChannelMap                     *maChannel
+		PDeviceID   *DeviceID
+		Format      Format   // ma_format
+		Channels    uint32   // ma_uint32
+		PChannelMap *Channel // ma_channel*
+		//
+		// TODO: left off here!!!
+		//
 		ChannelMixMode                  int32 // ma_channel_mix_mode (assumed int32)
 		CalculateLFEFromSpatialChannels bool  // ma_bool32
 		ShareMode                       int32 // ma_share_mode (assumed int32)
 	}
 
 	Capture struct {
-		PDeviceID                       *maDeviceID
-		Format                          int32  // ma_format (assumed int32)
-		Channels                        uint32 // ma_uint32
-		PChannelMap                     *maChannel
-		ChannelMixMode                  int32 // ma_channel_mix_mode (assumed int32)
-		CalculateLFEFromSpatialChannels bool  // ma_bool32
-		ShareMode                       int32 // ma_share_mode (assumed int32)
+		PDeviceID                       *DeviceID
+		Format                          Format   // ma_format
+		Channels                        uint32   // ma_uint32
+		PChannelMap                     *Channel // *ma_channel
+		ChannelMixMode                  int32    // ma_channel_mix_mode (assumed int32)
+		CalculateLFEFromSpatialChannels bool     // ma_bool32
+		ShareMode                       int32    // ma_share_mode (assumed int32)
 	}
 
-	Wasapi struct {
+	WASAPI struct {
 		Usage                  int32  // ma_wasapi_usage (assumed int32)
 		NoAutoConvertSRC       bool   // ma_bool8
 		NoDefaultQualitySRC    bool   // ma_bool8
@@ -57,7 +55,7 @@ type DeviceConfig struct {
 		LoopbackProcessExclude bool   // ma_bool8
 	}
 
-	Alsa struct {
+	ALSA struct {
 		NoMMap         bool // ma_bool32
 		NoAutoFormat   bool // ma_bool32
 		NoAutoChannels bool // ma_bool32

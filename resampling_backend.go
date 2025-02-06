@@ -2,6 +2,9 @@ package miniaudio
 
 import "unsafe"
 
+// ma_resampling_backend
+type ResamplingBackend struct{}
+
 // ma_resampling_backend_vtable
 type ResamplingBackendVTable struct {
 	OnGetHeapSize                 func(pUserData unsafe.Pointer, pConfig *ResamplerConfig, pHeapSizeInBytes *uint64) Result
@@ -15,6 +18,3 @@ type ResamplingBackendVTable struct {
 	OnGetExpectedOutputFrameCount func(pUserData unsafe.Pointer, pBackend *ResamplingBackend, inputFrameCount uint64, pOutputFrameCount *uint64) Result
 	OnReset                       func(pUserData unsafe.Pointer, pBackend *ResamplingBackend) Result
 }
-
-// ResamplingBackend is a placeholder for the C ma_resampling_backend struct.
-type ResamplingBackend struct{}
