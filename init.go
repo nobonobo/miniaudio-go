@@ -5,8 +5,6 @@ package miniaudio
 import (
 	"fmt"
 	"runtime"
-
-	"github.com/ebitengine/purego"
 )
 
 var lib uintptr
@@ -19,10 +17,10 @@ func init() {
 		panic(err)
 	}
 
-	purego.RegisterLibFunc(&maEngineInit, lib, "ma_engine_init")
+	// purego.RegisterLibFunc(&maEngineInit, lib, "ma_engine_init")
 
-	var engine maEngine
-	maEngineInit(nil, &engine)
+	// var engine maEngine
+	// maEngineInit(nil, &engine)
 }
 
 func getSystemLibrary() string {
