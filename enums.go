@@ -1,5 +1,15 @@
 package miniaudio
 
+// ma_channel_mix_mode
+type ChannelMixMode int32
+
+const (
+	ChannelMixModeRectangular   ChannelMixMode = 0 // Simple averaging based on the plane(s) the channel is sitting on.
+	ChannelMixModeSimple        ChannelMixMode = 1 // Drop excess channels; zeroed out extra channels.
+	ChannelMixModeCustomWeights ChannelMixMode = 2 // Use custom weights specified in ChannelConverterConfig.
+	ChannelMixModeDefault       ChannelMixMode = ChannelMixModeRectangular
+)
+
 // ma_device_type
 type DeviceType int32
 
@@ -37,4 +47,21 @@ type ResampleAlgorithm int32
 const (
 	ResampleAlgorithmLinear ResampleAlgorithm = 0 // Fastest, lowest quality. Optional low-pass filtering. Default.
 	ResampleAlgorithmCustom ResampleAlgorithm = 1 // Custom resampling algorithm.
+)
+
+// ma_share_mode
+type ShareMode int32
+
+const (
+	ShareModeShared    ShareMode = 0 // Shared mode.
+	ShareModeExclusive ShareMode = 1 // Exclusive mode.
+)
+
+// ma_wasapi_usage
+type WASAPIUsage int32
+
+const (
+	WASAPIUsageDefault  WASAPIUsage = 0 // Default usage.
+	WASAPIUsageGames    WASAPIUsage = 1 // Usage optimized for games.
+	WASAPIUsageProAudio WASAPIUsage = 2 // Usage optimized for professional audio.
 )

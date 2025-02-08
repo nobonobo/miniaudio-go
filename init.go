@@ -5,22 +5,21 @@ package miniaudio
 import (
 	"fmt"
 	"runtime"
+
+	"github.com/ebitengine/purego"
 )
 
-var lib uintptr
+var maDeviceConfigInit func(deviceConfig *DeviceConfig, deviceType DeviceType)
 
 func init() {
 	var err error
 
-	lib, err = openLibrary(getSystemLibrary())
+	lib, err := openLibrary(getSystemLibrary())
 	if err != nil {
 		panic(err)
 	}
 
-	// purego.RegisterLibFunc(&maEngineInit, lib, "ma_engine_init")
-
-	// var engine maEngine
-	// maEngineInit(nil, &engine)
+	purego.RegisterLibFunc(&maDeviceConfigInit, lib, "ma_device_config_init")
 }
 
 func getSystemLibrary() string {
