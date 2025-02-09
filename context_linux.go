@@ -11,7 +11,7 @@ type Context struct {
 	Log                     *Log                // ma_log*
 	OwnedLog                Log                 // Embedded log if owned by the context
 	ThreadPriority          ThreadPriority      // ma_thread_priority
-	ThreadStackSize         uintptr             // size_t
+	ThreadStackSize         Size                // size_t
 	UserData                unsafe.Pointer      // void*
 	AllocationCallbacks     AllocationCallbacks // ma_allocation_callbacks
 	DeviceEnumLock          Mutex               // ma_mutex
@@ -19,7 +19,7 @@ type Context struct {
 	DeviceInfoCapacity      uint32              // ma_uint32
 	PlaybackDeviceInfoCount uint32              // ma_uint32
 	CaptureDeviceInfoCount  uint32              // ma_uint32
-	DeviceInfos             *DeviceInfo         // ma_device_info*
+	DeviceInfo              *DeviceInfo         // ma_device_info*
 
 	PlatformUnion unsafe.Pointer // Union field to be cast to one of ALSA, Pulse, or Jack structs
 
@@ -30,9 +30,9 @@ type Context struct {
 
 // ALSA backend (if supported)
 type ContextALSA struct {
-	AsoundSO    uintptr // ma_handle
-	SndPcmOpen  Proc    // ma_proc
-	SndPcmClose Proc    // ma_proc
+	AsoundSO    Handle // ma_handle
+	SndPcmOpen  Proc   // ma_proc
+	SndPcmClose Proc   // ma_proc
 	// Add other ALSA fields here
 	InternalDeviceEnumLock Mutex  // ma_mutex
 	UseVerboseDeviceEnum   Bool32 // ma_bool32
@@ -40,8 +40,8 @@ type ContextALSA struct {
 
 // PulseAudio backend (if supported)
 type ContextPulse struct {
-	PulseSO       uintptr // ma_handle
-	PAMainLoopNew Proc    // ma_proc
+	PulseSO       Handle // ma_handle
+	PAMainLoopNew Proc   // ma_proc
 	// Add other Pulse fields here
 	PMainLoop       uintptr // pa_mainloop*
 	PPulseContext   uintptr // pa_context*
@@ -51,8 +51,8 @@ type ContextPulse struct {
 
 // JACK backend (if supported)
 type ContextJack struct {
-	JackSO         uintptr // ma_handle
-	JackClientOpen Proc    // ma_proc
+	JackSO         Handle // ma_handle
+	JackClientOpen Proc   // ma_proc
 	// Add other JACK fields here
 	PClientName    *byte  // *char
 	TryStartServer Bool32 // ma_bool32

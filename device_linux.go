@@ -3,40 +3,39 @@
 package miniaudio
 
 import (
-	"sync"
 	"unsafe"
 )
 
 // ma_device
 type Device struct {
-	Context                   *Context               // ma_context*
-	DeviceType                DeviceType             // ma_device_type (C enum)
-	SampleRate                uint32                 // ma_uint32 (C uint32)
-	State                     DeviceState            // ma_atomic_device_state (C atomic state)
-	OnData                    DeviceDataProc         // ma_device_data_proc (C function pointer)
-	OnNotification            DeviceNotificationProc // ma_device_notification_proc (C function pointer)
-	OnStop                    StopProc               // ma_stop_proc (C function pointer)
-	UserData                  unsafe.Pointer         // void* (C pointer type)
-	StartStopLock             sync.Mutex             // ma_mutex (C mutex type)
-	WakeupEvent               Event                  // ma_event (C event type)
-	StartEvent                Event                  // ma_event (C event type)
-	StopEvent                 Event                  // ma_event (C event type)
-	Thread                    Thread                 // ma_thread (C thread type)
-	WorkResult                Result                 // ma_result (C enum)
-	IsOwnerOfContext          bool                   // ma_bool8 (C bool)
-	NoPreSilencedOutputBuffer bool                   // ma_bool8 (C bool)
-	NoClip                    bool                   // ma_bool8 (C bool)
-	NoDisableDenormals        bool                   // ma_bool8 (C bool)
-	NoFixedSizedCallback      bool                   // ma_bool8 (C bool)
-	MasterVolumeFactor        float32                // ma_atomic_float (C atomic float)
-	DuplexRB                  uint32                 // ma_duplex_rb (C type)
+	Context                   *Context    // ma_context*
+	DeviceType                DeviceType  // ma_device_type
+	SampleRate                uint32      // ma_uint32
+	State                     DeviceState // ma_atomic_device_state
+	OnData                    Proc        // ma_device_data_proc
+	OnNotification            Proc        // ma_device_notification_proc
+	OnStop                    Proc        // ma_stop_proc
+	UserData                  VoidPtr     // void*
+	StartStopLock             Mutex       // ma_mutex
+	WakeupEvent               Event       // ma_event
+	StartEvent                Event       // ma_event
+	StopEvent                 Event       // ma_event
+	Thread                    Thread      // ma_thread
+	WorkResult                Result      // ma_result
+	IsOwnerOfContext          bool        // ma_bool8
+	NoPreSilencedOutputBuffer bool        // ma_bool8
+	NoClip                    bool        // ma_bool8
+	NoDisableDenormals        bool        // ma_bool8
+	NoFixedSizedCallback      bool        // ma_bool8
+	MasterVolumeFactor        float32     // ma_atomic_float
+	DuplexRB                  DuplexRB    // ma_duplex_rb
 
 	Resampling struct {
-		Algorithm       ResampleAlgorithm // ma_resample_algorithm (C enum)
-		BackendVTable   unsafe.Pointer    // ma_resampling_backend_vtable* (C pointer type)
-		BackendUserData unsafe.Pointer    // void* (C pointer type)
+		Algorithm       ResampleAlgorithm        // ma_resample_algorithm
+		BackendVTable   *ResamplingBackendVTable // ma_resampling_backend_vtable*
+		BackendUserData VoidPtr                  // void*
 		Linear          struct {
-			LPFOrder uint32 // ma_uint32 (C uint32)
+			LPFOrder uint32 // ma_uint32
 		}
 	}
 

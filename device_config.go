@@ -16,9 +16,9 @@ type DeviceConfig struct {
 	NoClip                    bool               // ma_bool8
 	NoDisableDenormals        bool               // ma_bool8
 	NoFixedSizedCallback      bool               // ma_bool8
-	DataCallback              uintptr            // ma_device_data_proc (function pointer)
-	NotificationCallback      uintptr            // ma_device_notification_proc (function pointer)
-	StopCallback              uintptr            // ma_stop_proc (function pointer)
+	DataCallback              Proc               // ma_device_data_proc (function pointer)
+	NotificationCallback      Proc               // ma_device_notification_proc (function pointer)
+	StopCallback              Proc               // ma_stop_proc (function pointer)
 	UserData                  unsafe.Pointer     // void*
 	Resampling                ResamplerConfig    // ma_resampler_config
 

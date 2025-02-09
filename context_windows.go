@@ -3,61 +3,80 @@
 package miniaudio
 
 import (
-	"sync"
 	"unsafe"
 )
 
 // ma_context
 type Context struct {
-	Callbacks               BackendCallbacks    // ma_backend_callbacks (C struct)
-	Backend                 Backend             // ma_backend (C enum)
-	Log                     *Log                // ma_log* (C pointer type)
-	LogDetails              Log                 // ma_log (C struct)
-	ThreadPriority          ThreadPriority      // ma_thread_priority (C enum)
-	ThreadStackSize         uint64              // size_t (C type)
-	UserData                unsafe.Pointer      // void* (C pointer type)
-	AllocationCallbacks     AllocationCallbacks // ma_allocation_callbacks (C struct)
-	DeviceEnumLock          sync.Mutex          // ma_mutex (C mutex)
-	DeviceInfoLock          sync.Mutex          // ma_mutex (C mutex)
-	DeviceInfoCapacity      uint32              // ma_uint32 (C uint32)
-	PlaybackDeviceInfoCount uint32              // ma_uint32 (C uint32)
-	CaptureDeviceInfoCount  uint32              // ma_uint32 (C uint32)
-	DeviceInfos             []*DeviceInfo       // ma_device_info* (C pointer to array of struct)
+	Callbacks               BackendCallbacks    // ma_backend_callbacks
+	Backend                 Backend             // ma_backend
+	Log                     *Log                // ma_log*
+	LogDetails              Log                 // ma_log
+	ThreadPriority          ThreadPriority      // ma_thread_priority
+	ThreadStackSize         Size                // size_t
+	UserData                unsafe.Pointer      // void*
+	AllocationCallbacks     AllocationCallbacks // ma_allocation_callback
+	DeviceEnumLock          Mutex               // ma_mutex
+	DeviceInfoLock          Mutex               // ma_mutex
+	DeviceInfoCapacity      uint32              // ma_uint32
+	PlaybackDeviceInfoCount uint32              // ma_uint32
+	CaptureDeviceInfoCount  uint32              // ma_uint32
+	DeviceInfo              *DeviceInfo         // ma_device_info*
 
 	WASAPI struct {
 		CommandThread                   Thread                  // ma_thread (C thread type)
-		CommandLock                     sync.Mutex              // ma_mutex (C mutex)
+		CommandLock                     Mutex                   // ma_mutex (C mutex)
 		CommandSem                      Semaphore               // ma_semaphore (C type)
 		CommandIndex                    uint32                  // ma_uint32 (C uint32)
 		CommandCount                    uint32                  // ma_uint32 (C uint32)
-		Commands                        [4]ContextCommandWasapi // ma_context_command__wasapi[4] (C array)
-		HAvrt                           unsafe.Pointer          // ma_handle (C handle type)
+		Commands                        [4]ContextCommandWASAPI // ma_context_command__wasapi[4] (C array)
+		HAvrt                           Handle                  // ma_handle (C handle type)
 		AvSetMmThreadCharacteristicsA   Proc                    // ma_proc (C function pointer type)
 		AvRevertMmThreadCharacteristics Proc                    // ma_proc (C function pointer type)
-		HMMDevapi                       unsafe.Pointer          // ma_handle (C handle type)
+		HMMDevapi                       Handle                  // ma_handle (C handle type)
 		ActivateAudioInterfaceAsync     Proc                    // ma_proc (C function pointer type)
 	}
 
 	Win32 struct {
-		HOle32DLL        unsafe.Pointer // ma_handle (C handle type)
-		CoInitialize     Proc           // ma_proc (C function pointer type)
-		CoInitializeEx   Proc           // ma_proc (C function pointer type)
-		CoUninitialize   Proc           // ma_proc (C function pointer type)
-		CoCreateInstance Proc           // ma_proc (C function pointer type)
-		CoTaskMemFree    Proc           // ma_proc (C function pointer type)
-		PropVariantClear Proc           // ma_proc (C function pointer type)
-		StringFromGUID2  Proc           // ma_proc (C function pointer type)
+		HOle32DLL        Handle // ma_handle (C handle type)
+		CoInitialize     Proc   // ma_proc (C function pointer type)
+		CoInitializeEx   Proc   // ma_proc (C function pointer type)
+		CoUninitialize   Proc   // ma_proc (C function pointer type)
+		CoCreateInstance Proc   // ma_proc (C function pointer type)
+		CoTaskMemFree    Proc   // ma_proc (C function pointer type)
+		PropVariantClear Proc   // ma_proc (C function pointer type)
+		StringFromGUID2  Proc   // ma_proc (C function pointer type)
 
-		HUser32DLL          unsafe.Pointer // ma_handle (C handle type)
-		GetForegroundWindow Proc           // ma_proc (C function pointer type)
-		GetDesktopWindow    Proc           // ma_proc (C function pointer type)
+		HUser32DLL          Handle // ma_handle (C handle type)
+		GetForegroundWindow Proc   // ma_proc (C function pointer type)
+		GetDesktopWindow    Proc   // ma_proc (C function pointer type)
 
-		HAdvapi32DLL     unsafe.Pointer // ma_handle (C handle type)
-		RegOpenKeyExA    Proc           // ma_proc (C function pointer type)
-		RegCloseKey      Proc           // ma_proc (C function pointer type)
-		RegQueryValueExA Proc           // ma_proc (C function pointer type)
+		HAdvapi32DLL     Handle // ma_handle (C handle type)
+		RegOpenKeyExA    Proc   // ma_proc (C function pointer type)
+		RegCloseKey      Proc   // ma_proc (C function pointer type)
+		RegQueryValueExA Proc   // ma_proc (C function pointer type)
 
-		CoInitializeResult int32 // long (C type)
+		CoInitializeResult Long // long (C type)
+	}
+}
+
+type ContextCommandWASAPI struct {
+	Code   int    // int
+	PEvent *Event // ma_event*
+	Data   struct {
+		Quit struct {
+			_unused int // int
+		}
+		CreateAudioClient struct {
+			DeviceType         DeviceType // ma_device_type
+			AudioClient        VoidPtr    // void*
+			AudioClientService *VoidPtr   // void**
+			Result             *Result    // ma_result*
+		}
+		ReleaseAudioClient struct {
+			Device     *Device    // ma_device*
+			DeviceType DeviceType // ma_device_type
+		}
 	}
 }
 

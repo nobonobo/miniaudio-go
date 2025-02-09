@@ -1,12 +1,11 @@
 package miniaudio
 
-import "unsafe"
-
+// ma_context_config
 type ContextConfig struct {
 	Log                 *Log                // ma_log*
 	ThreadPriority      ThreadPriority      // ma_thread_priority
-	ThreadStackSize     uintptr             // size_t
-	UserData            unsafe.Pointer      // void*
+	ThreadStackSize     Size                // size_t
+	UserData            VoidPtr             // void*
 	AllocationCallbacks AllocationCallbacks // ma_allocation_callbacks
 
 	ALSA struct {
@@ -22,13 +21,13 @@ type ContextConfig struct {
 	CoreAudio struct {
 		SessionCategory          IOSSessionCategory // ma_ios_session_category
 		SessionCategoryOptions   uint32             // ma_uint32
-		NoAudioSessionActivate   uint32             // ma_bool32
-		NoAudioSessionDeactivate uint32             // ma_bool32
+		NoAudioSessionActivate   Bool32             // ma_bool32
+		NoAudioSessionDeactivate Bool32             // ma_bool32
 	}
 
 	Jack struct {
 		ClientName     *byte  // const char*
-		TryStartServer uint32 // ma_bool32
+		TryStartServer Bool32 // ma_bool32
 	}
 
 	Custom BackendCallbacks // ma_backend_callbacks

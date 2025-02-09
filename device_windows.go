@@ -3,40 +3,39 @@
 package miniaudio
 
 import (
-	"sync"
 	"unsafe"
 )
 
 // ma_device
 type Device struct {
-	Context                   *Context               // ma_context*
-	DeviceType                DeviceType             // ma_device_type (C enum)
-	SampleRate                uint32                 // ma_uint32 (C uint32)
-	State                     DeviceState            // ma_atomic_device_state (C atomic state)
-	OnData                    DeviceDataProc         // ma_device_data_proc (C function pointer)
-	OnNotification            DeviceNotificationProc // ma_device_notification_proc (C function pointer)
-	OnStop                    StopProc               // ma_stop_proc (C function pointer)
-	UserData                  unsafe.Pointer         // void* (C pointer type)
-	StartStopLock             sync.Mutex             // ma_mutex (C mutex type)
-	WakeupEvent               Event                  // ma_event (C event type)
-	StartEvent                Event                  // ma_event (C event type)
-	StopEvent                 Event                  // ma_event (C event type)
-	Thread                    Thread                 // ma_thread (C thread type)
-	WorkResult                Result                 // ma_result (C enum)
-	IsOwnerOfContext          bool                   // ma_bool8 (C bool)
-	NoPreSilencedOutputBuffer bool                   // ma_bool8 (C bool)
-	NoClip                    bool                   // ma_bool8 (C bool)
-	NoDisableDenormals        bool                   // ma_bool8 (C bool)
-	NoFixedSizedCallback      bool                   // ma_bool8 (C bool)
-	MasterVolumeFactor        float32                // ma_atomic_float (C atomic float)
-	DuplexRB                  uint32                 // ma_duplex_rb (C type)
+	Context                   *Context    // ma_context*
+	DeviceType                DeviceType  // ma_device_type
+	SampleRate                uint32      // ma_uint32
+	State                     DeviceState // ma_atomic_device_state
+	OnData                    Proc        // ma_device_data_proc
+	OnNotification            Proc        // ma_device_notification_proc
+	OnStop                    Proc        // ma_stop_proc
+	UserData                  VoidPtr     // void*
+	StartStopLock             Mutex       // ma_mutex
+	WakeupEvent               Event       // ma_event
+	StartEvent                Event       // ma_event
+	StopEvent                 Event       // ma_event
+	Thread                    Thread      // ma_thread
+	WorkResult                Result      // ma_result
+	IsOwnerOfContext          bool        // ma_bool8
+	NoPreSilencedOutputBuffer bool        // ma_bool8
+	NoClip                    bool        // ma_bool8
+	NoDisableDenormals        bool        // ma_bool8
+	NoFixedSizedCallback      bool        // ma_bool8
+	MasterVolumeFactor        float32     // ma_atomic_float
+	DuplexRB                  DuplexRB    // ma_duplex_rb
 
 	Resampling struct {
-		Algorithm       ResampleAlgorithm // ma_resample_algorithm (C enum)
-		BackendVTable   unsafe.Pointer    // ma_resampling_backend_vtable* (C pointer type)
-		BackendUserData unsafe.Pointer    // void* (C pointer type)
+		Algorithm       ResampleAlgorithm        // ma_resample_algorithm
+		BackendVTable   *ResamplingBackendVTable // ma_resampling_backend_vtable*
+		BackendUserData VoidPtr                  // void*
 		Linear          struct {
-			LPFOrder uint32 // ma_uint32 (C uint32)
+			LPFOrder uint32 // ma_uint32
 		}
 	}
 
@@ -89,42 +88,42 @@ type Device struct {
 	}
 
 	WASAPI struct {
-		AudioClientPlayback              unsafe.Pointer // ma_ptr (C pointer type)
-		AudioClientCapture               unsafe.Pointer // ma_ptr (C pointer type)
-		RenderClient                     unsafe.Pointer // ma_ptr (C pointer type)
-		CaptureClient                    unsafe.Pointer // ma_ptr (C pointer type)
-		DeviceEnumerator                 unsafe.Pointer // ma_ptr (C pointer type)
-		NotificationClient               unsafe.Pointer // ma_IMMNotificationClient (C type)
-		EventPlayback                    unsafe.Pointer // ma_handle (C type)
-		EventCapture                     unsafe.Pointer // ma_handle (C type)
-		ActualBufferSizeInFramesPlayback uint32         // ma_uint32 (C uint32)
-		ActualBufferSizeInFramesCapture  uint32         // ma_uint32 (C uint32)
-		OriginalPeriodSizeInFrames       uint32         // ma_uint32 (C uint32)
-		OriginalPeriodSizeInMilliseconds uint32         // ma_uint32 (C uint32)
-		OriginalPeriods                  uint32         // ma_uint32 (C uint32)
-		OriginalPerformanceProfile       uint32         // ma_performance_profile (C type)
-		PeriodSizeInFramesPlayback       uint32         // ma_uint32 (C uint32)
-		PeriodSizeInFramesCapture        uint32         // ma_uint32 (C uint32)
-		MappedBufferCapture              unsafe.Pointer // void* (C pointer type)
-		MappedBufferCaptureCap           uint32         // ma_uint32 (C uint32)
-		MappedBufferCaptureLen           uint32         // ma_uint32 (C uint32)
-		MappedBufferPlayback             unsafe.Pointer // void* (C pointer type)
-		MappedBufferPlaybackCap          uint32         // ma_uint32 (C uint32)
-		MappedBufferPlaybackLen          uint32         // ma_uint32 (C uint32)
-		IsStartedCapture                 AtomicBool32   // ma_atomic_bool32 (C atomic type)
-		IsStartedPlayback                AtomicBool32   // ma_atomic_bool32 (C atomic type)
-		LoopbackProcessID                uint32         // ma_uint32 (C uint32)
-		LoopbackProcessExclude           bool           // ma_bool8 (C bool)
-		NoAutoConvertSRC                 bool           // ma_bool8 (C bool)
-		NoDefaultQualitySRC              bool           // ma_bool8 (C bool)
-		NoHardwareOffloading             bool           // ma_bool8 (C bool)
-		AllowCaptureAutoStreamRouting    bool           // ma_bool8 (C bool)
-		AllowPlaybackAutoStreamRouting   bool           // ma_bool8 (C bool)
-		IsDetachedPlayback               bool           // ma_bool8 (C bool)
-		IsDetachedCapture                bool           // ma_bool8 (C bool)
-		Usage                            uint32         // ma_wasapi_usage (C enum)
-		AvrtHandle                       unsafe.Pointer // ma_handle (C type)
-		RerouteLock                      sync.Mutex     // ma_mutex (C mutex type)
+		AudioClientPlayback              Ptr                    // ma_ptr (C pointer type)
+		AudioClientCapture               Ptr                    // ma_ptr (C pointer type)
+		RenderClient                     Ptr                    // ma_ptr (C pointer type)
+		CaptureClient                    Ptr                    // ma_ptr (C pointer type)
+		DeviceEnumerator                 Ptr                    // ma_ptr (C pointer type)
+		NotificationClient               IMMNotificationClientr // ma_IMMNotificationClient (C type)
+		EventPlayback                    Handle                 // ma_handle (C type)
+		EventCapture                     Handle                 // ma_handle (C type)
+		ActualBufferSizeInFramesPlayback uint32                 // ma_uint32 (C uint32)
+		ActualBufferSizeInFramesCapture  uint32                 // ma_uint32 (C uint32)
+		OriginalPeriodSizeInFrames       uint32                 // ma_uint32 (C uint32)
+		OriginalPeriodSizeInMilliseconds uint32                 // ma_uint32 (C uint32)
+		OriginalPeriods                  uint32                 // ma_uint32 (C uint32)
+		OriginalPerformanceProfile       PerformanceProfile     // ma_performance_profile (C type)
+		PeriodSizeInFramesPlayback       uint32                 // ma_uint32 (C uint32)
+		PeriodSizeInFramesCapture        uint32                 // ma_uint32 (C uint32)
+		MappedBufferCapture              unsafe.Pointer         // void* (C pointer type)
+		MappedBufferCaptureCap           uint32                 // ma_uint32 (C uint32)
+		MappedBufferCaptureLen           uint32                 // ma_uint32 (C uint32)
+		MappedBufferPlayback             unsafe.Pointer         // void* (C pointer type)
+		MappedBufferPlaybackCap          uint32                 // ma_uint32 (C uint32)
+		MappedBufferPlaybackLen          uint32                 // ma_uint32 (C uint32)
+		IsStartedCapture                 Bool32                 // ma_atomic_bool32 (C atomic type)
+		IsStartedPlayback                Bool32                 // ma_atomic_bool32 (C atomic type)
+		LoopbackProcessID                uint32                 // ma_uint32 (C uint32)
+		LoopbackProcessExclude           bool                   // ma_bool8 (C bool)
+		NoAutoConvertSRC                 bool                   // ma_bool8 (C bool)
+		NoDefaultQualitySRC              bool                   // ma_bool8 (C bool)
+		NoHardwareOffloading             bool                   // ma_bool8 (C bool)
+		AllowCaptureAutoStreamRouting    bool                   // ma_bool8 (C bool)
+		AllowPlaybackAutoStreamRouting   bool                   // ma_bool8 (C bool)
+		IsDetachedPlayback               bool                   // ma_bool8 (C bool)
+		IsDetachedCapture                bool                   // ma_bool8 (C bool)
+		Usage                            WASAPIUsage            // ma_wasapi_usage (C enum)
+		AvrtHandle                       Handle                 // ma_handle (C type)
+		RerouteLock                      Mutex                  // ma_mutex (C mutex type)
 	}
 }
 
