@@ -9,7 +9,12 @@ import (
 	"github.com/ebitengine/purego"
 )
 
-var maDeviceConfigInit func(deviceConfig *DeviceConfig, deviceType DeviceType)
+var (
+	maDeviceConfigInit func(deviceConfig *DeviceConfig, deviceType DeviceType)
+	maDeviceInit       func(context *Context, config *DeviceConfig, device *Device) Result
+	maDeviceStart      func(device *Device) Result
+	maDeviceUninit     func(device *Device)
+)
 
 func init() {
 	var err error
@@ -20,6 +25,9 @@ func init() {
 	}
 
 	purego.RegisterLibFunc(&maDeviceConfigInit, lib, "ma_device_config_init")
+	purego.RegisterLibFunc(&maDeviceInit, lib, "ma_device_init")
+	purego.RegisterLibFunc(&maDeviceStart, lib, "ma_device_start")
+	purego.RegisterLibFunc(&maDeviceUninit, lib, "ma_device_uninit")
 }
 
 func getSystemLibrary() string {

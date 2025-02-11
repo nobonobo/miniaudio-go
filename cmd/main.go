@@ -2,6 +2,8 @@ package main
 
 import (
 	"log/slog"
+	"os"
+	"runtime"
 
 	"github.com/samborkent/miniaudio"
 )
@@ -19,15 +21,29 @@ func main() {
 	config.Playback.Format = miniaudio.FormatF32
 	config.Playback.Channels = 2
 	config.SampleRate = 48000
-	// config.DataCallback = 0 // TODO: set callback function
+	// config.DataCallback = 0 // TODO: set callback function. This function will be called when miniaudio needs more data.
 
 	slog.Info("got device config", slog.Any("config", config))
 
-	//     config.dataCallback      = data_callback;   // This function will be called when miniaudio needs more data.
-	//     config.pUserData         = pMyCustomData;   // Can be accessed from the device object (device.pUserData).
+	var device *miniaudio.Device
 
-	//     ma_device device;
-	//     if (ma_device_init(NULL, &config, &device) != MA_SUCCESS) {
-	//         return -1;  // Failed to initialize the device.
-	//     }
+	runtime.KeepAlive(device)
+
+	result := miniaudio.DeviceInit(nil, config, device)
+	if result != miniaudio.Success {
+		os.Exit(int(result))
+	}
+
+	slog.Info("got device", slog.Any("device", device))
+
+	result = miniaudio.DeviceStart(device)
+	if result != miniaudio.Success {
+		os.Exit(int(result))
+	}
+
+	// Do something here. Probably your program's main loop.
+
+	miniaudio.DeviceUninit(device)
+
+	os.Exit(0)
 }

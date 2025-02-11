@@ -24,6 +24,18 @@ const (
 
 const BackendCount = int32(backendCount)
 
+// ma_channel_conversion_path
+type ChannelConversionPath int32
+
+const (
+	ChannelConversionPathUnknown     ChannelConversionPath = iota // ma_channel_conversion_path_unknown
+	ChannelConversionPathPassthrough                              // ma_channel_conversion_path_passthrough
+	ChannelConversionPathMonoOut                                  // ma_channel_conversion_path_mono_out
+	ChannelConversionPathMonoIn                                   // ma_channel_conversion_path_mono_in
+	ChannelConversionPathShuffle                                  // ma_channel_conversion_path_shuffle
+	ChannelConversionPathWeights                                  // ma_channel_conversion_path_weights
+)
+
 // ma_channel_mix_mode
 type ChannelMixMode int32
 
@@ -32,6 +44,18 @@ const (
 	ChannelMixModeSimple        ChannelMixMode = 1 // Drop excess channels; zeroed out extra channels.
 	ChannelMixModeCustomWeights ChannelMixMode = 2 // Use custom weights specified in ChannelConverterConfig.
 	ChannelMixModeDefault       ChannelMixMode = ChannelMixModeRectangular
+)
+
+// ma_data_converter_execution_path
+type DataConverterExecutionPath int32
+
+const (
+	DataConverterExecutionPathPassthrough   DataConverterExecutionPath = iota // ma_data_converter_execution_path_passthrough
+	DataConverterExecutionPathFormatOnly                                      // ma_data_converter_execution_path_format_only
+	DataConverterExecutionPathChannelsOnly                                    // ma_data_converter_execution_path_channels_only
+	DataConverterExecutionPathResampleOnly                                    // ma_data_converter_execution_path_resample_only
+	DataConverterExecutionPathResampleFirst                                   // ma_data_converter_execution_path_resample_first
+	DataConverterExecutionPathChannelsFirst                                   // ma_data_converter_execution_path_channels_first
 )
 
 // ma_device_state
@@ -53,6 +77,15 @@ const (
 	DeviceTypeCapture  DeviceType = 2
 	DeviceTypeDuplex   DeviceType = DeviceTypePlayback | DeviceTypeCapture // 3
 	DeviceTypeLoopback DeviceType = 4
+)
+
+// ma_dither_mode
+type DitherMode int32
+
+const (
+	DitherModeNone      DitherMode = 0 // ma_dither_mode_none
+	DitherModeRectangle DitherMode = 1 // ma_dither_mode_rectangle
+	DitherModeTriangle  DitherMode = 2 // ma_dither_mode_triangle
 )
 
 // ma_format

@@ -12,3 +12,15 @@ func DeviceConfigInit(deviceType DeviceType) DeviceConfig {
 	maDeviceConfigInit(&deviceConfig, deviceType)
 	return deviceConfig
 }
+
+func DeviceInit(context *Context, config DeviceConfig, device *Device) Result {
+	return maDeviceInit(context, &config, device)
+}
+
+func DeviceStart(device *Device) Result {
+	return maDeviceStart(device)
+}
+
+func DeviceUninit(device *Device) {
+	maDeviceUninit(device)
+}
