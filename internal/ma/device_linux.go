@@ -1,6 +1,6 @@
 //go:build linux
 
-package miniaudio
+package ma
 
 import (
 	"unsafe"

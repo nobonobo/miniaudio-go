@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 type DeviceDescriptor struct {
 	DeviceID                 *DeviceID

@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 // ma_backend
 type Backend int32

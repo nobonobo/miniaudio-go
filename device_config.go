@@ -1,85 +1,66 @@
 package miniaudio
 
-import "unsafe"
+import (
+	"fmt"
+	"math/rand/v2"
+	"unsafe"
 
-type Channel uint8
+	"github.com/ebitengine/purego"
+	"github.com/samborkent/miniaudio/internal/ma"
+)
 
-// ma_device_config
 type DeviceConfig struct {
-	DeviceType                DeviceType         // ma_device_type
-	SampleRate                uint32             // ma_uint32
-	PeriodSizeInFrames        uint32             // ma_uint32
-	PeriodSizeInMilliseconds  uint32             // ma_uint32
-	Periods                   uint32             // ma_uint32
-	PerformanceProfile        PerformanceProfile // ma_performance_profile
-	NoPreSilencedOutputBuffer bool               // ma_bool8
-	NoClip                    bool               // ma_bool8
-	NoDisableDenormals        bool               // ma_bool8
-	NoFixedSizedCallback      bool               // ma_bool8
-	DataCallback              Proc               // ma_device_data_proc (function pointer)
-	NotificationCallback      Proc               // ma_device_notification_proc (function pointer)
-	StopCallback              Proc               // ma_stop_proc (function pointer)
-	UserData                  unsafe.Pointer     // void*
-	Resampling                ResamplerConfig    // ma_resampler_config
+	DeviceType DeviceType
+}
 
-	Playback struct {
-		DeviceID                        *DeviceID
-		Format                          Format         // ma_format
-		Channels                        uint32         // ma_uint32
-		ChannelMap                      *Channel       // ma_channel*
-		ChannelMixMode                  ChannelMixMode // ma_channel_mix_mode
-		CalculateLFEFromSpatialChannels bool           // ma_bool32
-		ShareMode                       int32          // ma_share_mode
+func (c DeviceConfig) toMA(config *ma.DeviceConfig) {
+	config.DeviceType = c.DeviceType.toMA()
+	config.SampleRate = 48000
+
+	if c.DeviceType == DeviceTypePlayback || c.DeviceType == DeviceTypeDuplex {
+		config.Playback.Format = ma.FormatF32
+		config.Playback.Channels = 2
 	}
 
-	Capture struct {
-		DeviceID                        *DeviceID
-		Format                          Format         // ma_format
-		Channels                        uint32         // ma_uint32
-		ChannelMap                      *Channel       // *ma_channel
-		ChannelMixMode                  ChannelMixMode // ma_channel_mix_mode
-		CalculateLFEFromSpatialChannels bool           // ma_bool32
-		ShareMode                       ShareMode      // ma_share_mode
+	if c.DeviceType == DeviceTypeCapture || c.DeviceType == DeviceTypeDuplex {
+		config.Capture.Format = ma.FormatF32
+		config.Capture.Channels = 1
 	}
 
-	WASAPI struct {
-		Usage                  WASAPIUsage // ma_wasapi_usage
-		NoAutoConvertSRC       bool        // ma_bool8
-		NoDefaultQualitySRC    bool        // ma_bool8
-		NoAutoStreamRouting    bool        // ma_bool8
-		NoHardwareOffloading   bool        // ma_bool8
-		LoopbackProcessID      uint32      // ma_uint32
-		LoopbackProcessExclude bool        // ma_bool8
+	var dataCallback func(device *ma.Device, output, input ma.VoidPtr, frameCount uint32)
+
+	switch c.DeviceType {
+	case DeviceTypePlayback:
+		dataCallback = func(_ *ma.Device, output, _ ma.VoidPtr, frameCount uint32) {
+			samples := make([]float32, int(frameCount))
+
+			for i := range frameCount {
+				samples[i] = 2*rand.Float32() - 1
+			}
+
+			output = ma.VoidPtr(&samples[0])
+		}
+	case DeviceTypeCapture:
+		dataCallback = func(_ *ma.Device, _, input ma.VoidPtr, frameCount uint32) {
+			var floatType float32
+
+			for i := range frameCount {
+				fmt.Printf("%.3f", *(*float32)(unsafe.Pointer(uintptr(input) + uintptr(unsafe.Sizeof(floatType)*uintptr(i)))))
+			}
+		}
+	case DeviceTypeDuplex:
+		dataCallback = func(_ *ma.Device, output, input ma.VoidPtr, frameCount uint32) {
+			var floatType float32
+
+			for i := range frameCount {
+				fmt.Printf("%.3f", *(*float32)(unsafe.Pointer(uintptr(input) + uintptr(unsafe.Sizeof(floatType)*uintptr(i)))))
+			}
+
+			output = input
+		}
+	default:
+		panic("device type not supported")
 	}
 
-	ALSA struct {
-		NoMMap         bool // ma_bool32
-		NoAutoFormat   bool // ma_bool32
-		NoAutoChannels bool // ma_bool32
-		NoAutoResample bool // ma_bool32
-	}
-
-	Pulse struct {
-		StreamNamePlayback *byte // const char*
-		StreamNameCapture  *byte // const char*
-	}
-
-	CoreAudio struct {
-		AllowNominalSampleRateChange bool // ma_bool32
-	}
-
-	OpenSL struct {
-		StreamType                     int32 // ma_opensl_stream_type (not implemented)
-		RecordingPreset                int32 // ma_opensl_recording_preset (not implemented)
-		EnableCompatibilityWorkarounds bool  // ma_bool32
-	}
-
-	AAudio struct {
-		Usage                          int32 // ma_aaudio_usage (not implemented)
-		ContentType                    int32 // ma_aaudio_content_type (not implemented)
-		InputPreset                    int32 // ma_aaudio_input_preset (not implemented)
-		AllowedCapturePolicy           int32 // ma_aaudio_allowed_capture_policy (not implemented)
-		NoAutoStartAfterReroute        bool  // ma_bool32
-		EnableCompatibilityWorkarounds bool  // ma_bool32
-	}
+	config.DataCallback = ma.Proc(purego.NewCallback(dataCallback))
 }

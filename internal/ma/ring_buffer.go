@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 type DuplexRB struct {
 	RB PCMRB

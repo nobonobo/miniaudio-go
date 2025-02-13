@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 // ma_result
 type Result int32

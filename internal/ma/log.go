@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 import "unsafe"
 

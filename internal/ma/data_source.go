@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 type DataSourceBase struct {
 	Vtable         *DataSourceVTable // const ma_data_source_vtable*

@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 // ma_context_config
 type ContextConfig struct {

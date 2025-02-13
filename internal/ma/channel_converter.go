@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 // ma_channel_converter
 type ChannelConverter struct {

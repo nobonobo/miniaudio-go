@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 const NativeDataFormatsCount = 64 // FormatCount * StandardSampleRateCount * MaxChannels
 

@@ -1,6 +1,6 @@
 //go:build windows
 
-package miniaudio
+package ma
 
 import (
 	"unsafe"

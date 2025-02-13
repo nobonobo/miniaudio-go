@@ -3,17 +3,22 @@
 package miniaudio
 
 import (
+	"embed"
 	"fmt"
 	"runtime"
 
 	"github.com/ebitengine/purego"
+	"github.com/samborkent/miniaudio/internal/ma"
 )
 
+//go:embed build/*
+var buildEmbed embed.FS
+
 var (
-	maDeviceConfigInit func(deviceConfig *DeviceConfig, deviceType DeviceType)
-	maDeviceInit       func(context *Context, config *DeviceConfig, device *Device) Result
-	maDeviceStart      func(device *Device) Result
-	maDeviceUninit     func(device *Device)
+	maDeviceConfigInit func(deviceConfig *ma.DeviceConfig, deviceType ma.DeviceType)
+	maDeviceInit       func(context *ma.Context, config *ma.DeviceConfig, device *ma.Device) ma.Result
+	maDeviceStart      func(device *ma.Device) ma.Result
+	maDeviceUninit     func(device *ma.Device)
 )
 
 func init() {

@@ -1,4 +1,4 @@
-package miniaudio
+package ma
 
 type DataConverter struct {
 	FormatIn                Format                     // ma_format
