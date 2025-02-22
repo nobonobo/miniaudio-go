@@ -14,7 +14,7 @@ import (
 var buildEmbed embed.FS
 
 func openLibrary() (uintptr, error) {
-	name := "build/windows/libminiaudio-windows-" + runtime.GOARCH + ".so"
+	name := "build/windows/libminiaudio-windows-" + runtime.GOARCH + ".dll"
 
 	dynamicLibrary, err := windows.LoadLibrary(name)
 	if err != nil {
