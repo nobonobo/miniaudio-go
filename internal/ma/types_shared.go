@@ -11,5 +11,4 @@ type (
 	Proc       uintptr        // _proc
 	Size       uintptr        // size_t
 	Thread     unsafe.Pointer // ma_threat
-	VoidPtr    unsafe.Pointer // void*
 )

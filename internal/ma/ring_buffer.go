@@ -1,5 +1,7 @@
 package ma
 
+import "unsafe"
+
 type DuplexRB struct {
 	RB PCMRB
 }
@@ -13,7 +15,7 @@ type PCMRB struct {
 }
 
 type RB struct {
-	Buffer                 VoidPtr             // void*
+	Buffer                 unsafe.Pointer      // void*
 	SubbufferSizeInBytes   uint32              // ma_uint32
 	SubbufferCount         uint32              // ma_uint32
 	SubbufferStrideInBytes uint32              // ma_uint32

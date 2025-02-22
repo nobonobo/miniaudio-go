@@ -1,5 +1,7 @@
 package ma
 
+import "unsafe"
+
 type DataConverter struct {
 	FormatIn                Format                     // ma_format
 	FormatOut               Format                     // ma_format
@@ -18,8 +20,8 @@ type DataConverter struct {
 	IsPassthrough           bool                       // ma_bool8
 
 	// Memory management
-	OwnsHeap bool    // ma_bool8
-	Heap     VoidPtr // void*
+	OwnsHeap bool           // ma_bool8
+	Heap     unsafe.Pointer // void*
 }
 
 // typedef struct

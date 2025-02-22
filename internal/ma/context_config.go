@@ -1,11 +1,13 @@
 package ma
 
+import "unsafe"
+
 // ma_context_config
 type ContextConfig struct {
 	Log                 *Log                // ma_log*
 	ThreadPriority      ThreadPriority      // ma_thread_priority
 	ThreadStackSize     Size                // size_t
-	UserData            VoidPtr             // void*
+	UserData            unsafe.Pointer      // void*
 	AllocationCallbacks AllocationCallbacks // ma_allocation_callbacks
 
 	ALSA struct {

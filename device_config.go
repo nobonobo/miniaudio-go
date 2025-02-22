@@ -27,21 +27,23 @@ func (c DeviceConfig) toMA(config *ma.DeviceConfig) {
 		config.Capture.Channels = 1
 	}
 
-	var dataCallback func(device *ma.Device, output, input ma.VoidPtr, frameCount uint32)
+	var dataCallback func(device *ma.Device, output, input unsafe.Pointer, frameCount uint32)
 
 	switch c.DeviceType {
 	case DeviceTypePlayback:
-		dataCallback = func(_ *ma.Device, output, _ ma.VoidPtr, frameCount uint32) {
-			samples := make([]float32, int(frameCount))
+		dataCallback = func(_ *ma.Device, output, _ unsafe.Pointer, frameCount uint32) {
+			samples := unsafe.Slice((*float32)(output), frameCount*config.Playback.Channels)
 
 			for i := range frameCount {
-				samples[i] = 2*rand.Float32() - 1
-			}
+				sample := 2*rand.Float32() - 1
 
-			output = ma.VoidPtr(&samples[0])
+				for c := range config.Playback.Channels {
+					samples[i*config.Playback.Channels+c] = sample
+				}
+			}
 		}
 	case DeviceTypeCapture:
-		dataCallback = func(_ *ma.Device, _, input ma.VoidPtr, frameCount uint32) {
+		dataCallback = func(_ *ma.Device, _, input unsafe.Pointer, frameCount uint32) {
 			var floatType float32
 
 			for i := range frameCount {
@@ -49,14 +51,15 @@ func (c DeviceConfig) toMA(config *ma.DeviceConfig) {
 			}
 		}
 	case DeviceTypeDuplex:
-		dataCallback = func(_ *ma.Device, output, input ma.VoidPtr, frameCount uint32) {
-			var floatType float32
+		dataCallback = func(_ *ma.Device, output, input unsafe.Pointer, frameCount uint32) {
+			inputSamples := unsafe.Slice((*float32)(input), frameCount)
+			outputSamples := unsafe.Slice((*float32)(output), frameCount*config.Playback.Channels)
 
 			for i := range frameCount {
-				fmt.Printf("%.3f", *(*float32)(unsafe.Pointer(uintptr(input) + uintptr(unsafe.Sizeof(floatType)*uintptr(i)))))
+				for c := range config.Playback.Channels {
+					outputSamples[i*config.Playback.Channels+c] = inputSamples[i]
+				}
 			}
-
-			output = input
 		}
 	default:
 		panic("device type not supported")

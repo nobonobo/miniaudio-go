@@ -1,10 +1,12 @@
 package ma
 
+import "unsafe"
+
 // ma_resampler
 type Resampler struct {
 	Backend         *ResamplingBackend       // ma_resampling_backend*
 	BackendVTable   *ResamplingBackendVTable // ma_resampling_backend_vtable*
-	BackendUserData VoidPtr                  // void*
+	BackendUserData unsafe.Pointer           // void*
 	Format          Format                   // ma_format
 	Channels        uint32                   // ma_uint32
 	SampleRateIn    uint32                   // ma_uint32
@@ -12,8 +14,8 @@ type Resampler struct {
 	State           struct {
 		Linear LinearResampler // ma_linear_resampler
 	}
-	Heap     VoidPtr // void*
-	OwnsHeap Bool32  // ma_bool32
+	Heap     unsafe.Pointer // void*
+	OwnsHeap Bool32         // ma_bool32
 }
 
 // ma_linear_resampler
@@ -31,9 +33,9 @@ type LinearResampler struct {
 		F32 *float32 // float*
 		S16 *int16   // ma_int16*
 	} // union x1
-	LPF      LPF     // ma_lpf
-	Heap     VoidPtr // void*
-	OwnsHeap Bool32  // ma_bool32
+	LPF      LPF            // ma_lpf
+	Heap     unsafe.Pointer // void*
+	OwnsHeap Bool32         // ma_bool32
 }
 
 // ma_linear_resampler_config
@@ -48,15 +50,15 @@ type LinearResamplerConfig struct {
 
 // ma_lpf
 type LPF struct {
-	Format     Format  // ma_format
-	Channels   uint32  // ma_uint32
-	SampleRate uint32  // ma_uint32
-	LPF1Count  uint32  // ma_uint32
-	LPF2Count  uint32  // ma_uint32
-	LPF1       *LPF1   // *ma_lpf1
-	LPF2       *LPF2   // *ma_lpf2
-	Heap       VoidPtr // void*
-	OwnsHeap   Bool32  // ma_bool32
+	Format     Format         // ma_format
+	Channels   uint32         // ma_uint32
+	SampleRate uint32         // ma_uint32
+	LPF1Count  uint32         // ma_uint32
+	LPF2Count  uint32         // ma_uint32
+	LPF1       *LPF1          // *ma_lpf1
+	LPF2       *LPF2          // *ma_lpf2
+	Heap       unsafe.Pointer // void*
+	OwnsHeap   Bool32         // ma_bool32
 }
 
 // ma_lpf1
@@ -65,7 +67,7 @@ type LPF1 struct {
 	Channels uint32             // ma_uint32
 	A        BiquadCoefficient  // ma_biquad_coefficient
 	R1       *BiquadCoefficient // *ma_biquad_coefficient
-	Heap     VoidPtr            // void*
+	Heap     unsafe.Pointer     // void*
 	OwnsHeap Bool32             // ma_bool32
 }
 
@@ -91,6 +93,6 @@ type Biquad struct {
 	A2       BiquadCoefficient  // ma_biquad_coefficient
 	R1       *BiquadCoefficient // ma_biquad_coefficient*
 	R2       *BiquadCoefficient // ma_biquad_coefficient*
-	Heap     VoidPtr            // void*
+	Heap     unsafe.Pointer     // void*
 	OwnsHeap Bool32             // ma_bool32
 }

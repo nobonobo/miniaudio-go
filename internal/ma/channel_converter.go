@@ -1,5 +1,7 @@
 package ma
 
+import "unsafe"
+
 // ma_channel_converter
 type ChannelConverter struct {
 	Format         Format                // ma_format
@@ -12,6 +14,6 @@ type ChannelConverter struct {
 	ShuffleTable   *uint8                // ma_uint8*
 	WeightsF32     **float32             // float**
 	WeightsS16     **int32               // ma_int32**
-	HeapPointer    VoidPtr               // void*
+	HeapPointer    unsafe.Pointer        // void*
 	OwnsHeap       Bool32                // ma_bool32
 }

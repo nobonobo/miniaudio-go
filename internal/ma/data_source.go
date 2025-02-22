@@ -1,5 +1,7 @@
 package ma
 
+import "unsafe"
+
 type DataSourceBase struct {
 	Vtable         *DataSourceVTable // const ma_data_source_vtable*
 	RangeBegFrames uint64            // ma_uint64
@@ -13,7 +15,7 @@ type DataSourceBase struct {
 }
 
 type DataSourceVTable struct {
-	OnRead          func(dataSource DataSource, framesOut VoidPtr, frameCount uint64, framesRead *uint64) Result
+	OnRead          func(dataSource DataSource, framesOut unsafe.Pointer, frameCount uint64, framesRead *uint64) Result
 	OnSeek          func(dataSource DataSource, frameIndex uint64) Result
 	OnGetDataFormat func(dataSource DataSource, format *Format, channels *uint32, sampleRate *uint32, channelMap *Channel, channelMapCap Size) Result
 	OnGetCursor     func(dataSource DataSource, cursor *uint64) Result
