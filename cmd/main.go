@@ -14,7 +14,7 @@ func main() {
 	defer cancel()
 
 	device := miniaudio.NewDevice(miniaudio.DeviceConfig{
-		DeviceType: miniaudio.DeviceTypePlayback,
+		DeviceType: miniaudio.DeviceTypeDuplex,
 	})
 
 	if err := device.Init(); err != nil {
