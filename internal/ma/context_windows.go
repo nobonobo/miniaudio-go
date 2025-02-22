@@ -68,10 +68,10 @@ type ContextCommandWASAPI struct {
 			_unused int // int
 		}
 		CreateAudioClient struct {
-			DeviceType         DeviceType // ma_device_type
-			AudioClient        VoidPtr    // void*
-			AudioClientService *VoidPtr   // void**
-			Result             *Result    // ma_result*
+			DeviceType         DeviceType      // ma_device_type
+			AudioClient        unsafe.Pointer  // void*
+			AudioClientService *unsafe.Pointer // void**
+			Result             *Result         // ma_result*
 		}
 		ReleaseAudioClient struct {
 			Device     *Device    // ma_device*
