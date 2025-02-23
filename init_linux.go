@@ -5,7 +5,10 @@ package miniaudio
 import (
 	"embed"
 	"fmt"
+	"io/fs"
+	"path"
 	"runtime"
+	"strings"
 
 	"github.com/ebitengine/purego"
 )
@@ -13,13 +16,30 @@ import (
 //go:embed build/linux/*
 var buildEmbed embed.FS
 
-func openLibrary() (uintptr, error) {
-	name := "build/linux/libminiaudio-linux-" + runtime.GOARCH + ".so"
+const rootDir = "build/linux"
 
-	dynamicLibrary, err := purego.Dlopen(name, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+func openLibrary() (uintptr, error) {
+	dirEntries, err := fs.ReadDir(buildEmbed, rootDir)
 	if err != nil {
-		return 0, fmt.Errorf("loading unix library: %w", err)
+		return 0, fmt.Errorf("reading dir: %w", err)
 	}
 
-	return dynamicLibrary, nil
+	for _, dirEntry := range dirEntries {
+		if dirEntry.IsDir() {
+			continue
+		}
+
+		if !strings.Contains(dirEntry.Name(), runtime.GOARCH) {
+			continue
+		}
+
+		dynamicLibrary, err := purego.Dlopen(path.Join(rootDir, dirEntry.Name()), purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		if err != nil {
+			return 0, fmt.Errorf("loading unix library: %w", err)
+		}
+
+		return dynamicLibrary, nil
+	}
+
+	return 0, ErrLibraryNotFound
 }

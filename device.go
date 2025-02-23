@@ -1,6 +1,8 @@
 package miniaudio
 
 import (
+	"sync/atomic"
+
 	"github.com/samborkent/miniaudio/internal/ma"
 )
 
@@ -9,19 +11,29 @@ type Device struct {
 
 	config *ma.DeviceConfig
 	device *ma.Device
+
+	initialized atomic.Bool
 }
 
-func NewDevice(config DeviceConfig) *Device {
+func NewDevice(config DeviceConfig) (*Device, error) {
+	if !initialized.Load() {
+		return nil, ErrNotInitialized
+	}
+
 	var maConfig ma.DeviceConfig
 	config.toMA(&maConfig)
 
 	return &Device{
 		Config: config,
 		config: &maConfig,
-	}
+	}, nil
 }
 
 func (d *Device) Init() error {
+	if !initialized.Load() {
+		return ErrNotInitialized
+	}
+
 	var device ma.Device
 
 	result := maDeviceInit(nil, d.config, &device)
@@ -30,11 +42,16 @@ func (d *Device) Init() error {
 	}
 
 	d.device = &device
+	d.initialized.Store(true)
 
 	return nil
 }
 
 func (d *Device) Start() error {
+	if !d.initialized.Load() {
+		return ErrDeviceNotInitialized
+	}
+
 	result := maDeviceStart(d.device)
 	if result != ma.Success {
 		return convertResult(result)
@@ -44,5 +61,9 @@ func (d *Device) Start() error {
 }
 
 func (d *Device) Uninit() {
+	if !d.initialized.Load() {
+		return
+	}
+
 	maDeviceUninit(d.device)
 }

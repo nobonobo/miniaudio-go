@@ -3,6 +3,10 @@
 package miniaudio
 
 import (
+	"fmt"
+	"sync"
+	"sync/atomic"
+
 	"github.com/ebitengine/purego"
 	"github.com/samborkent/miniaudio/internal/ma"
 )
@@ -14,16 +18,38 @@ var (
 	maDeviceUninit     func(device *ma.Device)
 )
 
-func init() {
-	var err error
+var (
+	initOnce    sync.Once
+	initialized atomic.Bool
+	initErr     atomic.Value
+)
 
-	lib, err := openLibrary()
-	if err != nil {
-		panic(err)
+// Init loads in the miniaudio library and registers the relevant functions.
+func Init() error {
+	if !initialized.Load() {
+		initOnce.Do(func() {
+			lib, err := openLibrary()
+			if err != nil {
+				initErr.Store(fmt.Errorf("miniaudio: opening library: %w", err))
+				return
+			}
+
+			purego.RegisterLibFunc(&maDeviceConfigInit, lib, "ma_device_config_init")
+			purego.RegisterLibFunc(&maDeviceInit, lib, "ma_device_init")
+			purego.RegisterLibFunc(&maDeviceStart, lib, "ma_device_start")
+			purego.RegisterLibFunc(&maDeviceUninit, lib, "ma_device_uninit")
+
+			initialized.Store(true)
+		})
 	}
 
-	purego.RegisterLibFunc(&maDeviceConfigInit, lib, "ma_device_config_init")
-	purego.RegisterLibFunc(&maDeviceInit, lib, "ma_device_init")
-	purego.RegisterLibFunc(&maDeviceStart, lib, "ma_device_start")
-	purego.RegisterLibFunc(&maDeviceUninit, lib, "ma_device_uninit")
+	errAny := initErr.Load()
+	if errAny != nil {
+		err, ok := errAny.(error)
+		if ok {
+			return err
+		}
+	}
+
+	return nil
 }
