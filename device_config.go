@@ -1,19 +1,26 @@
 package miniaudio
 
 import (
-	"fmt"
-	"math/rand/v2"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
 	"github.com/samborkent/miniaudio/internal/ma"
 )
 
+type (
+	PlaybackCallback func(frameCount, channelCount int) [][]float32
+	CaptureCallback  func(inputSamples []float32)
+)
+
 type DeviceConfig struct {
-	DeviceType DeviceType
+	DeviceType       DeviceType
+	PlaybackCallback PlaybackCallback
+	CaptureCallback  CaptureCallback
 }
 
-func (c DeviceConfig) toMA(config *ma.DeviceConfig) {
+func (c DeviceConfig) toMA() *ma.DeviceConfig {
+	config := new(ma.DeviceConfig)
+
 	config.DeviceType = c.DeviceType.toMA()
 	config.SampleRate = 48000
 
@@ -32,13 +39,13 @@ func (c DeviceConfig) toMA(config *ma.DeviceConfig) {
 	switch c.DeviceType {
 	case DeviceTypePlayback:
 		dataCallback = func(_ *ma.Device, output, _ unsafe.Pointer, frameCount uint32) uintptr {
-			samples := unsafe.Slice((*float32)(output), frameCount*config.Playback.Channels)
+			outputSamples := unsafe.Slice((*float32)(output), frameCount*config.Playback.Channels)
+
+			gotSamples := c.PlaybackCallback(int(frameCount), int(config.Playback.Channels))
 
 			for i := range frameCount {
-				sample := 2*rand.Float32() - 1
-
 				for c := range config.Playback.Channels {
-					samples[i*config.Playback.Channels+c] = sample
+					outputSamples[i*config.Playback.Channels+c] = gotSamples[i][c]
 				}
 			}
 
@@ -46,22 +53,23 @@ func (c DeviceConfig) toMA(config *ma.DeviceConfig) {
 		}
 	case DeviceTypeCapture:
 		dataCallback = func(_ *ma.Device, _, input unsafe.Pointer, frameCount uint32) uintptr {
-			var floatType float32
+			inputSamples := unsafe.Slice((*float32)(input), frameCount*config.Capture.Channels)
 
-			for i := range frameCount {
-				fmt.Printf("%.3f", *(*float32)(unsafe.Pointer(uintptr(input) + uintptr(unsafe.Sizeof(floatType)*uintptr(i)))))
-			}
+			c.CaptureCallback(inputSamples)
 
 			return 0
 		}
 	case DeviceTypeDuplex:
 		dataCallback = func(_ *ma.Device, output, input unsafe.Pointer, frameCount uint32) uintptr {
-			inputSamples := unsafe.Slice((*float32)(input), frameCount)
+			inputSamples := unsafe.Slice((*float32)(input), frameCount*config.Capture.Channels)
 			outputSamples := unsafe.Slice((*float32)(output), frameCount*config.Playback.Channels)
+
+			go c.CaptureCallback(inputSamples)
+			gotSamples := c.PlaybackCallback(int(frameCount), int(config.Playback.Channels))
 
 			for i := range frameCount {
 				for c := range config.Playback.Channels {
-					outputSamples[i*config.Playback.Channels+c] = inputSamples[i]
+					outputSamples[i*config.Playback.Channels+c] = gotSamples[i][c]
 				}
 			}
 
@@ -72,4 +80,6 @@ func (c DeviceConfig) toMA(config *ma.DeviceConfig) {
 	}
 
 	config.DataCallback = ma.Proc(purego.NewCallback(dataCallback))
+
+	return config
 }

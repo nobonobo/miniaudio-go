@@ -20,12 +20,9 @@ func NewDevice(config DeviceConfig) (*Device, error) {
 		return nil, ErrNotInitialized
 	}
 
-	var maConfig ma.DeviceConfig
-	config.toMA(&maConfig)
-
 	return &Device{
 		Config: config,
-		config: &maConfig,
+		config: config.toMA(),
 	}, nil
 }
 
