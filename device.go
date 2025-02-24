@@ -7,7 +7,7 @@ import (
 )
 
 type Device struct {
-	Config DeviceConfig
+	Type DeviceType
 
 	config *ma.DeviceConfig
 	device *ma.Device
@@ -20,8 +20,22 @@ func NewDevice(config DeviceConfig) (*Device, error) {
 		return nil, ErrNotInitialized
 	}
 
+	switch config.DeviceType {
+	case DeviceTypePlayback, DeviceTypeCapture, DeviceTypeDuplex:
+	default:
+		return nil, ErrDeviceTypeUnknown
+	}
+
+	if config.DeviceType == DeviceTypePlayback ||
+		config.DeviceType == DeviceTypeDuplex {
+		return nil, ErrNilPlaybackCallback
+	} else if config.DeviceType == DeviceTypeCapture ||
+		config.DeviceType == DeviceTypeDuplex {
+		return nil, ErrNilCaptureCallback
+	}
+
 	return &Device{
-		Config: config,
+		Type:   config.DeviceType,
 		config: config.toMA(),
 	}, nil
 }
