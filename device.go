@@ -15,7 +15,7 @@ type Device struct {
 	initialized atomic.Bool
 }
 
-func NewDevice(config DeviceConfig) (*Device, error) {
+func NewDevice[T Formats](config DeviceConfig[T]) (*Device, error) {
 	if !initialized.Load() {
 		return nil, ErrNotInitialized
 	}
@@ -28,10 +28,14 @@ func NewDevice(config DeviceConfig) (*Device, error) {
 
 	if config.DeviceType == DeviceTypePlayback ||
 		config.DeviceType == DeviceTypeDuplex {
-		return nil, ErrNilPlaybackCallback
+		if config.PlaybackCallback == nil {
+			return nil, ErrNilPlaybackCallback
+		}
 	} else if config.DeviceType == DeviceTypeCapture ||
 		config.DeviceType == DeviceTypeDuplex {
-		return nil, ErrNilCaptureCallback
+		if config.PlaybackCallback == nil {
+			return nil, ErrNilCaptureCallback
+		}
 	}
 
 	return &Device{

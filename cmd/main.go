@@ -10,7 +10,7 @@ import (
 	"github.com/samborkent/miniaudio"
 )
 
-const bufferSize = 514
+const bufferSize = 2048
 
 type sampleBuffer struct {
 	samples [][]float32
@@ -19,14 +19,14 @@ type sampleBuffer struct {
 var samplePool = sync.Pool{
 	New: func() any {
 		return &sampleBuffer{
-			samples: make([][]float32, bufferSize),
+			samples: make([][]float32, 0, bufferSize),
 		}
 	},
 }
 
 var transferChannel = make(chan float32, bufferSize)
 
-func captureCallback(inputSamples []float32) {
+func captureCallback(inputSamples []float32, frameCount, channelCount int) {
 	for _, sample := range inputSamples {
 		transferChannel <- sample
 	}
@@ -36,7 +36,7 @@ func playbackBallback(frameCount, channelCount int) [][]float32 {
 	buffer := samplePool.Get()
 
 	samples, _ := buffer.(*sampleBuffer)
-
+	clear(samples.samples)
 	samples.samples = make([][]float32, frameCount)
 
 	for i := range frameCount {
@@ -63,7 +63,7 @@ func main() {
 		return
 	}
 
-	device, err := miniaudio.NewDevice(miniaudio.DeviceConfig{
+	device, err := miniaudio.NewDevice(miniaudio.DeviceConfig[float32]{
 		DeviceType:       miniaudio.DeviceTypeDuplex,
 		PlaybackCallback: playbackBallback,
 		CaptureCallback:  captureCallback,

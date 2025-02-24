@@ -29,7 +29,7 @@ type DeviceConfig struct {
 		ChannelMap                      *Channel       // ma_channel*
 		ChannelMixMode                  ChannelMixMode // ma_channel_mix_mode
 		CalculateLFEFromSpatialChannels bool           // ma_bool32
-		ShareMode                       int32          // ma_share_mode
+		ShareMode                       ShareMode      // ma_share_mode
 	}
 
 	Capture struct {
