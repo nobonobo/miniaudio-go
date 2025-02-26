@@ -63,6 +63,24 @@ func main() {
 		return
 	}
 
+	context := miniaudio.NewContext()
+
+	if err := context.Init(); err != nil {
+		slog.ErrorContext(ctx, "initializing miniaudio context: "+err.Error())
+		return
+	}
+
+	playbackDevices, captureDevices, err := context.GetDevices()
+	if err != nil {
+		slog.ErrorContext(ctx, "getting device info: "+err.Error())
+		return
+	}
+
+	slog.InfoContext(ctx, "Device info",
+		slog.Any("playback", playbackDevices),
+		slog.Any("capture", captureDevices),
+	)
+
 	device, err := miniaudio.NewDevice(miniaudio.DeviceConfig[float32]{
 		DeviceType:       miniaudio.DeviceTypeDuplex,
 		PlaybackCallback: playbackBallback,
