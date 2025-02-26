@@ -37,6 +37,10 @@ func (c *Context) Init() error {
 }
 
 func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, err error) {
+	if !c.initialized.Load() {
+		return nil, nil, ErrContextNotInitialized
+	}
+
 	pDevices := &ma.DeviceInfo{}
 	cDevices := &ma.DeviceInfo{}
 
@@ -102,4 +106,12 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 	}
 
 	return playbackDevices, captureDevices, nil
+}
+
+func (c *Context) Uninit() {
+	if !c.initialized.Load() {
+		return
+	}
+
+	maContextUninit(c.context)
 }

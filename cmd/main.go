@@ -69,6 +69,7 @@ func main() {
 		slog.ErrorContext(ctx, "initializing miniaudio context: "+err.Error())
 		return
 	}
+	defer context.Uninit()
 
 	playbackDevices, captureDevices, err := context.GetDevices()
 	if err != nil {
