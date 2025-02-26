@@ -1,6 +1,7 @@
 package miniaudio
 
 import (
+	"log/slog"
 	"sync/atomic"
 	"unsafe"
 
@@ -54,6 +55,8 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 	maPlaybackDevices := unsafe.Slice(pDevices, pCount)
 	playbackDevices = make([]DeviceInfo, len(maPlaybackDevices))
 
+	slog.Info("playback", slog.Any("devices", maPlaybackDevices))
+
 	for i, deviceInfo := range maPlaybackDevices {
 		var isDefault bool
 
@@ -80,6 +83,8 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 
 	maCapturePlaybackDevices := unsafe.Slice(cDevices, cCount)
 	captureDevices = make([]DeviceInfo, len(maCapturePlaybackDevices))
+
+	slog.Info("capture", slog.Any("devices", maCapturePlaybackDevices))
 
 	for i, deviceInfo := range maCapturePlaybackDevices {
 		var isDefault bool
