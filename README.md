@@ -1,4 +1,4 @@
-# [WIP] miniaudio
+# miniaudio-go [WIP]
 
 Current C library version: v0.11.22
 
