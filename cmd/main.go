@@ -100,6 +100,30 @@ func main() {
 
 	slog.Info("initialized device", slog.Any("device", device))
 
+	playbackInfo, err := device.GetInfo(miniaudio.DeviceTypePlayback)
+	if err != nil {
+		slog.ErrorContext(ctx, "getting playback device info: "+err.Error())
+		return
+	}
+
+	captureInfo, err := device.GetInfo(miniaudio.DeviceTypeCapture)
+	if err != nil {
+		slog.ErrorContext(ctx, "getting capture device info: "+err.Error())
+		return
+	}
+
+	duplexInfo, err := device.GetInfo(miniaudio.DeviceTypeDuplex)
+	if err != nil {
+		slog.ErrorContext(ctx, "getting duplex device info: "+err.Error())
+		return
+	}
+
+	slog.Info("device info",
+		slog.Any("playback", playbackInfo),
+		slog.Any("capture", captureInfo),
+		slog.Any("duplex", duplexInfo),
+	)
+
 	if err := device.Start(); err != nil {
 		slog.ErrorContext(ctx, "starting device: "+err.Error())
 		return

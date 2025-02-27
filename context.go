@@ -73,10 +73,10 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 
 		for j := range deviceInfo.NativeDataFormatCount {
 			playbackDevices[i].DataFormats[j] = DataFormat{
-				Format:     formatFromMA(deviceInfo.NativeDataFormats[i].Format),
-				Channels:   int(deviceInfo.NativeDataFormats[i].Channels),
-				SampleRate: int(deviceInfo.NativeDataFormats[i].SampleRate),
-				Flags:      deviceInfo.NativeDataFormats[i].Flags,
+				Format:     formatFromMA(deviceInfo.NativeDataFormats[j].Format),
+				Channels:   int(deviceInfo.NativeDataFormats[j].Channels),
+				SampleRate: int(deviceInfo.NativeDataFormats[j].SampleRate),
+				Flags:      deviceInfo.NativeDataFormats[j].Flags,
 			}
 		}
 	}
@@ -102,10 +102,10 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 
 		for j := range deviceInfo.NativeDataFormatCount {
 			playbackDevices[i].DataFormats[j] = DataFormat{
-				Format:     formatFromMA(deviceInfo.NativeDataFormats[i].Format),
-				Channels:   int(deviceInfo.NativeDataFormats[i].Channels),
-				SampleRate: int(deviceInfo.NativeDataFormats[i].SampleRate),
-				Flags:      deviceInfo.NativeDataFormats[i].Flags,
+				Format:     formatFromMA(deviceInfo.NativeDataFormats[j].Format),
+				Channels:   int(deviceInfo.NativeDataFormats[j].Channels),
+				SampleRate: int(deviceInfo.NativeDataFormats[j].SampleRate),
+				Flags:      deviceInfo.NativeDataFormats[j].Flags,
 			}
 		}
 	}
