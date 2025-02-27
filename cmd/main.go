@@ -13,34 +13,34 @@ import (
 const bufferSize = 2048
 
 type sampleBuffer struct {
-	samples [][]float32
+	samples [][]int16
 }
 
 var samplePool = sync.Pool{
 	New: func() any {
 		return &sampleBuffer{
-			samples: make([][]float32, 0, bufferSize),
+			samples: make([][]int16, 0, bufferSize),
 		}
 	},
 }
 
-var transferChannel = make(chan float32, bufferSize)
+var transferChannel = make(chan int16, bufferSize)
 
-func captureCallback(inputSamples []float32, frameCount, channelCount int) {
+func captureCallback(inputSamples []int16, frameCount, channelCount int) {
 	for _, sample := range inputSamples {
 		transferChannel <- sample
 	}
 }
 
-func playbackBallback(frameCount, channelCount int) [][]float32 {
+func playbackBallback(frameCount, channelCount int) [][]int16 {
 	buffer := samplePool.Get()
 
 	samples, _ := buffer.(*sampleBuffer)
 	clear(samples.samples)
-	samples.samples = make([][]float32, frameCount)
+	samples.samples = make([][]int16, frameCount)
 
 	for i := range frameCount {
-		samples.samples[i] = make([]float32, channelCount)
+		samples.samples[i] = make([]int16, channelCount)
 
 		sample := <-transferChannel
 
@@ -82,7 +82,7 @@ func main() {
 		slog.Any("capture", captureDevices),
 	)
 
-	device, err := miniaudio.NewDevice(miniaudio.DeviceConfig[float32]{
+	device, err := miniaudio.NewDevice(miniaudio.DeviceConfig[int16]{
 		DeviceType:       miniaudio.DeviceTypeDuplex,
 		PlaybackCallback: playbackBallback,
 		CaptureCallback:  captureCallback,
@@ -122,7 +122,16 @@ func main() {
 		return
 	}
 
+	slog.Info("Device has started...")
+
 	<-ctx.Done()
+
+	slog.Info("Device is stopping...")
+
+	if err := device.Stop(); err != nil {
+		slog.ErrorContext(ctx, "stopping device: "+err.Error())
+		return
+	}
 
 	slog.Info("bye")
 }

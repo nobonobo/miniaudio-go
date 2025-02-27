@@ -1,7 +1,6 @@
 package miniaudio
 
 import (
-	"log/slog"
 	"sync/atomic"
 	"unsafe"
 
@@ -55,28 +54,26 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 	maPlaybackDevices := unsafe.Slice(pDevices, pCount)
 	playbackDevices = make([]DeviceInfo, len(maPlaybackDevices))
 
-	slog.Info("playback", slog.Any("devices", maPlaybackDevices))
-
-	for i, deviceInfo := range maPlaybackDevices {
+	for i := range pCount {
 		var isDefault bool
 
-		if deviceInfo.IsDefault > 0 {
+		if maPlaybackDevices[i].IsDefault > 0 {
 			isDefault = true
 		}
 
 		playbackDevices[i] = DeviceInfo{
-			ID:          cutil.String(deviceInfo.ID[:]),
-			Name:        cutil.String(deviceInfo.Name[:]),
+			ID:          cutil.String(maPlaybackDevices[i].ID[:]),
+			Name:        cutil.String(maPlaybackDevices[i].Name[:]),
 			IsDefault:   isDefault,
-			DataFormats: make([]DataFormat, deviceInfo.NativeDataFormatCount),
+			DataFormats: make([]DataFormat, maPlaybackDevices[i].NativeDataFormatCount),
 		}
 
-		for j := range deviceInfo.NativeDataFormatCount {
+		for j := range maPlaybackDevices[i].NativeDataFormatCount {
 			playbackDevices[i].DataFormats[j] = DataFormat{
-				Format:     formatFromMA(deviceInfo.NativeDataFormats[j].Format),
-				Channels:   int(deviceInfo.NativeDataFormats[j].Channels),
-				SampleRate: int(deviceInfo.NativeDataFormats[j].SampleRate),
-				Flags:      deviceInfo.NativeDataFormats[j].Flags,
+				Format:     formatFromMA(maPlaybackDevices[i].NativeDataFormats[j].Format),
+				Channels:   int(maPlaybackDevices[i].NativeDataFormats[j].Channels),
+				SampleRate: int(maPlaybackDevices[i].NativeDataFormats[j].SampleRate),
+				Flags:      maPlaybackDevices[i].NativeDataFormats[j].Flags,
 			}
 		}
 	}
@@ -84,28 +81,26 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 	maCapturePlaybackDevices := unsafe.Slice(cDevices, cCount)
 	captureDevices = make([]DeviceInfo, len(maCapturePlaybackDevices))
 
-	slog.Info("capture", slog.Any("devices", maCapturePlaybackDevices))
-
-	for i, deviceInfo := range maCapturePlaybackDevices {
+	for i := range cCount {
 		var isDefault bool
 
-		if deviceInfo.IsDefault > 0 {
+		if maCapturePlaybackDevices[i].IsDefault > 0 {
 			isDefault = true
 		}
 
 		captureDevices[i] = DeviceInfo{
-			ID:          cutil.String(deviceInfo.ID[:]),
-			Name:        cutil.String(deviceInfo.Name[:]),
+			ID:          cutil.String(maCapturePlaybackDevices[i].ID[:]),
+			Name:        cutil.String(maCapturePlaybackDevices[i].Name[:]),
 			IsDefault:   isDefault,
-			DataFormats: make([]DataFormat, deviceInfo.NativeDataFormatCount),
+			DataFormats: make([]DataFormat, maCapturePlaybackDevices[i].NativeDataFormatCount),
 		}
 
-		for j := range deviceInfo.NativeDataFormatCount {
+		for j := range maCapturePlaybackDevices[i].NativeDataFormatCount {
 			playbackDevices[i].DataFormats[j] = DataFormat{
-				Format:     formatFromMA(deviceInfo.NativeDataFormats[j].Format),
-				Channels:   int(deviceInfo.NativeDataFormats[j].Channels),
-				SampleRate: int(deviceInfo.NativeDataFormats[j].SampleRate),
-				Flags:      deviceInfo.NativeDataFormats[j].Flags,
+				Format:     formatFromMA(maCapturePlaybackDevices[i].NativeDataFormats[j].Format),
+				Channels:   int(maCapturePlaybackDevices[i].NativeDataFormats[j].Channels),
+				SampleRate: int(maCapturePlaybackDevices[i].NativeDataFormats[j].SampleRate),
+				Flags:      maCapturePlaybackDevices[i].NativeDataFormats[j].Flags,
 			}
 		}
 	}

@@ -15,3 +15,5 @@ build-windows-arm64:
 	zig cc -target aarch64-windows-gnu -shared tmp/libminiaudio-windows-arm64.o -o build/windows/libminiaudio-windows-arm64.dll
 
 build-all: build-linux-amd64 build-linux-arm64 build-windows-amd64 build-windows-arm64
+
+build: CGO_ENABLED=0 go build -o bin/ cmd/main.go

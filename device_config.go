@@ -22,30 +22,30 @@ func (c DeviceConfig[T]) toMA() *ma.DeviceConfig {
 	config := new(ma.DeviceConfig)
 
 	config.DeviceType = c.DeviceType.toMA()
-	// config.SampleRate = 48000
+	config.SampleRate = 48000
 
-	// switch any(*new(T)).(type) {
-	// case uint8:
-	// 	config.Playback.Format = ma.FormatU8
-	// 	config.Capture.Format = ma.FormatU8
-	// case int16:
-	// 	config.Playback.Format = ma.FormatS16
-	// 	config.Capture.Format = ma.FormatS16
-	// case int32:
-	// 	config.Playback.Format = ma.FormatS32
-	// 	config.Capture.Format = ma.FormatS32
-	// case float32:
-	// 	config.Playback.Format = ma.FormatF32
-	// 	config.Capture.Format = ma.FormatF32
-	// }
+	switch any(*new(T)).(type) {
+	case uint8:
+		config.Playback.Format = ma.FormatU8
+		config.Capture.Format = ma.FormatU8
+	case int16:
+		config.Playback.Format = ma.FormatS16
+		config.Capture.Format = ma.FormatS16
+	case int32:
+		config.Playback.Format = ma.FormatS32
+		config.Capture.Format = ma.FormatS32
+	case float32:
+		config.Playback.Format = ma.FormatF32
+		config.Capture.Format = ma.FormatF32
+	}
 
-	// if c.DeviceType == DeviceTypePlayback || c.DeviceType == DeviceTypeDuplex {
-	// 	config.Playback.Channels = 2
-	// }
+	if c.DeviceType == DeviceTypePlayback || c.DeviceType == DeviceTypeDuplex {
+		config.Playback.Channels = 2
+	}
 
-	// if c.DeviceType == DeviceTypeCapture || c.DeviceType == DeviceTypeDuplex {
-	// 	config.Capture.Channels = 1
-	// }
+	if c.DeviceType == DeviceTypeCapture || c.DeviceType == DeviceTypeDuplex {
+		config.Capture.Channels = 1
+	}
 
 	var dataCallback func(device *ma.Device, output, input unsafe.Pointer, frameCount uint32) uintptr
 

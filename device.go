@@ -105,6 +105,19 @@ func (d *Device) Start() error {
 	return nil
 }
 
+func (d *Device) Stop() error {
+	if !d.initialized.Load() {
+		return ErrDeviceNotInitialized
+	}
+
+	result := maDeviceStop(d.device)
+	if result != ma.Success {
+		return convertResult(result)
+	}
+
+	return nil
+}
+
 func (d *Device) Uninit() {
 	if !d.initialized.Load() {
 		return

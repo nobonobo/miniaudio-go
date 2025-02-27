@@ -20,6 +20,7 @@ var (
 	maDeviceInit       func(context *ma.Context, config *ma.DeviceConfig, device *ma.Device) ma.Result
 	maDeviceGetInfo    func(device *ma.Device, deviceType ma.DeviceType, deviceInfo *ma.DeviceInfo) ma.Result
 	maDeviceStart      func(device *ma.Device) ma.Result
+	maDeviceStop       func(device *ma.Device) ma.Result
 	maDeviceUninit     func(device *ma.Device)
 )
 
@@ -46,6 +47,7 @@ func Init() error {
 			purego.RegisterLibFunc(&maDeviceInit, lib, "ma_device_init")
 			purego.RegisterLibFunc(&maDeviceGetInfo, lib, "ma_device_get_info")
 			purego.RegisterLibFunc(&maDeviceStart, lib, "ma_device_start")
+			purego.RegisterLibFunc(&maDeviceStop, lib, "ma_device_stop")
 			purego.RegisterLibFunc(&maDeviceUninit, lib, "ma_device_uninit")
 
 			initialized.Store(true)
