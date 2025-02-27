@@ -62,14 +62,29 @@ func (d *Device) Init() error {
 	return nil
 }
 
-func (d *Device) GetInfo(deviceType DeviceType) (DeviceInfo, error) {
+func (d *Device) PlaybackInfo() (DeviceInfo, error) {
 	if !d.initialized.Load() {
 		return DeviceInfo{}, ErrDeviceNotInitialized
 	}
 
 	var deviceInfo ma.DeviceInfo
 
-	result := maDeviceGetInfo(d.device, deviceType.toMA(), &deviceInfo)
+	result := maDeviceGetInfo(d.device, ma.DeviceTypePlayback, &deviceInfo)
+	if result != ma.Success {
+		return DeviceInfo{}, convertResult(result)
+	}
+
+	return deviceInfoFromMA(deviceInfo), nil
+}
+
+func (d *Device) CaptureInfo() (DeviceInfo, error) {
+	if !d.initialized.Load() {
+		return DeviceInfo{}, ErrDeviceNotInitialized
+	}
+
+	var deviceInfo ma.DeviceInfo
+
+	result := maDeviceGetInfo(d.device, ma.DeviceTypeCapture, &deviceInfo)
 	if result != ma.Success {
 		return DeviceInfo{}, convertResult(result)
 	}
