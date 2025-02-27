@@ -1,9 +1,9 @@
 # miniaudio
 
+Current C library version: v0.11.22
+
 ## TODO
 
-- Use native device settings
-- Update miniaudio
+- Fix deadlock when not setting any device formats (should use device defaults).
 - Read number of channels from miniaudio context.
-- Add miniaudio as git submodule.
 - Generate intermittant C file after macros.

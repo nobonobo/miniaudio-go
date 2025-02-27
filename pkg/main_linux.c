@@ -1,4 +1,3 @@
-#define MINIAUDIO_IMPLEMENTATION
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_ALSA
 #define MA_ENABLE_PULSEAUDIO
@@ -11,4 +10,4 @@
 #define MA_NO_RESOURCE_MANAGER
 #define MA_NO_NODE_GRAPH
 #define MA_NO_GENERATION
-#include "miniaudio.h"
+#include "miniaudio/miniaudio.c"
