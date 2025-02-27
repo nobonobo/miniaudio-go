@@ -18,7 +18,7 @@ type DeviceConfig[T Formats] struct {
 	CaptureCallback  CaptureCallback[T]
 }
 
-func (c DeviceConfig[T]) toMA() *ma.DeviceConfig {
+func (c DeviceConfig[T]) toMA() (*ma.DeviceConfig, error) {
 	config := new(ma.DeviceConfig)
 
 	config.DeviceType = c.DeviceType.toMA()
@@ -89,10 +89,10 @@ func (c DeviceConfig[T]) toMA() *ma.DeviceConfig {
 			return 0
 		}
 	default:
-		panic("device type not supported")
+		return nil, ErrDeviceTypeNotSupported
 	}
 
 	config.DataCallback = ma.Proc(purego.NewCallback(dataCallback))
 
-	return config
+	return config, nil
 }

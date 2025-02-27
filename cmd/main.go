@@ -71,6 +71,8 @@ func main() {
 	}
 	defer context.Uninit()
 
+	slog.Info("initialized context", slog.Any("context", context))
+
 	playbackDevices, captureDevices, err := context.GetDevices()
 	if err != nil {
 		slog.ErrorContext(ctx, "getting device info: "+err.Error())

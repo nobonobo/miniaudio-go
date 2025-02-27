@@ -18,4 +18,8 @@ build-windows-arm64:
 
 build-all: build-linux-amd64 build-linux-arm64 build-windows-amd64 build-windows-arm64
 
-build: CGO_ENABLED=0 go build -o bin/ cmd/main.go
+build:
+	CGO_ENABLED=0 go build -o bin/ cmd/main.go
+
+run:
+	CGO_ENABLED=0 go run cmd/main.go

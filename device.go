@@ -38,9 +38,14 @@ func NewDevice[T Formats](config DeviceConfig[T]) (*Device, error) {
 		}
 	}
 
+	cfg, err := config.toMA()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Device{
 		Type:   config.DeviceType,
-		config: config.toMA(),
+		config: cfg,
 	}, nil
 }
 

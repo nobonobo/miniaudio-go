@@ -4,11 +4,13 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/samborkent/miniaudio/cutil"
+	"github.com/samborkent/miniaudio/internal/cutil"
 	"github.com/samborkent/miniaudio/internal/ma"
 )
 
 type Context struct {
+	Backend Backend
+
 	context *ma.Context
 
 	initialized atomic.Bool
@@ -30,6 +32,12 @@ func (c *Context) Init() error {
 		return convertResult(result)
 	}
 
+	backend, err := backendFromMA(context.Backend)
+	if err != nil {
+		return err
+	}
+
+	c.Backend = backend
 	c.context = &context
 	c.initialized.Store(true)
 
