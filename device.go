@@ -1,6 +1,7 @@
 package miniaudio
 
 import (
+	"log/slog"
 	"math"
 	"sync/atomic"
 
@@ -8,7 +9,7 @@ import (
 )
 
 type Device struct {
-	Type DeviceType
+	Config *DeviceConfig
 
 	config *ma.DeviceConfig
 	device *ma.Device
@@ -46,7 +47,7 @@ func NewDevice(config *DeviceConfig) (*Device, error) {
 	}
 
 	return &Device{
-		Type:   config.DeviceType,
+		Config: config,
 		config: cfg,
 	}, nil
 }
@@ -65,6 +66,44 @@ func (d *Device) Init() error {
 
 	d.device = &device
 	d.initialized.Store(true)
+
+	if (d.Config.DeviceType == DeviceTypePlayback ||
+		d.Config.DeviceType == DeviceTypeDuplex) &&
+		d.config.Playback.Channels == 0 {
+		playbackInfo, err := d.PlaybackInfo()
+		if err != nil {
+			return err
+		}
+
+		if len(playbackInfo.DataFormats) == 0 {
+			return ErrChannelsUnknown
+		}
+
+		if len(playbackInfo.DataFormats) > 1 {
+			slog.Warn("multiple playback formats detected!")
+		}
+
+		d.Config.Playback.Channels = playbackInfo.DataFormats[0].Channels
+	}
+
+	if (d.Config.DeviceType == DeviceTypeCapture ||
+		d.Config.DeviceType == DeviceTypeDuplex) &&
+		d.config.Capture.Channels == 0 {
+		captureInfo, err := d.CaptureInfo()
+		if err != nil {
+			return err
+		}
+
+		if len(captureInfo.DataFormats) == 0 {
+			return ErrChannelsUnknown
+		}
+
+		if len(captureInfo.DataFormats) > 1 {
+			slog.Warn("multiple capture formats detected!")
+		}
+
+		d.Config.Capture.Channels = captureInfo.DataFormats[0].Channels
+	}
 
 	return nil
 }

@@ -28,22 +28,9 @@ func (c *DeviceConfig) toMA() (*ma.DeviceConfig, error) {
 	config.DeviceType = c.DeviceType.toMA()
 	config.SampleRate = uint32(c.SampleRate)
 	config.Playback.Format = c.Playback.Format.toMA()
-
-	playbackChannels := 0
-	if c.Playback.Channels > 0 && c.Playback.Channels <= ma.MaxChannels {
-		playbackChannels = c.Playback.Channels
-	}
-
-	config.Playback.Channels = uint32(playbackChannels)
-
+	config.Playback.Channels = uint32(c.Playback.Channels)
 	config.Capture.Format = c.Capture.Format.toMA()
-
-	captureChannels := 0
-	if c.Capture.Channels > 0 && c.Capture.Channels <= ma.MaxChannels {
-		captureChannels = c.Capture.Channels
-	}
-
-	config.Capture.Channels = uint32(captureChannels)
+	config.Capture.Channels = uint32(c.Capture.Channels)
 
 	var dataCallback func(device *ma.Device, output, input unsafe.Pointer, frameCount uint32) uintptr
 	var err error

@@ -91,14 +91,14 @@ func main() {
 
 	deviceConfig := miniaudio.DeviceConfig{
 		DeviceType: miniaudio.DeviceTypeDuplex,
-		// Playback: miniaudio.FormatConfig{
-		// 	Format:   miniaudio.FormatFloat32,
-		// 	Channels: 2,
-		// },
-		// Capture: miniaudio.FormatConfig{
-		// 	Format:   miniaudio.FormatFloat32,
-		// 	Channels: 1,
-		// },
+		Playback: miniaudio.FormatConfig{
+			Format: miniaudio.FormatFloat32,
+			// Channels: 2,
+		},
+		Capture: miniaudio.FormatConfig{
+			Format: miniaudio.FormatFloat32,
+			// Channels: 1,
+		},
 	}
 
 	miniaudio.SetDuplexCallback(&deviceConfig, duplexCallback)

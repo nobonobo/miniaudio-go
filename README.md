@@ -17,8 +17,5 @@ Initial focus is on Linux & Windows operating systems with `amd64` architecture.
 
 ## TODO
 
-- Fix deadlock when not setting any device formats (should use device defaults).
-    - Issue is caused by the fact that we were using config to know channel.
-    - Need to find a way to set dta callback afte init, so we can know channel count within the data callback.
-- Read number of channels from miniaudio context.
+- Find way to set data callback after device init, so format & channels can be read from device info.
 - Generate intermittant C file after macros.

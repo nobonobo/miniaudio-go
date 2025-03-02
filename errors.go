@@ -10,6 +10,7 @@ var (
 	ErrBackendNotSupported    = errors.New("miniaudio: backend not supported")
 	ErrSampleRateInvalid      = errors.New("miniaudio: invalid sample rate")
 	ErrChannelsInvalid        = errors.New("miniaudio: invalid number of channels")
+	ErrChannelsUnknown        = errors.New("miniaudio: unknown number of channels")
 	ErrNilCallback            = errors.New("miniaudio: nil callback")
 	ErrFormatNotSupported     = errors.New("miniaudio: format not supported")
 	ErrDeviceNotInitialized   = errors.New("miniaudio: device not initialized")
