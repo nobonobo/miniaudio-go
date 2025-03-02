@@ -12,16 +12,153 @@ type (
 	DuplexCallback[P, C Formats] func(inputSamples []C, frameCount, playbackChannels, captureChannels int) [][]P
 )
 
-func SetPlaybackCallback[T Formats](config *DeviceConfig, callback PlaybackCallback[T]) {
+func SetPlaybackCallback[T Formats](config *DeviceConfig, callback PlaybackCallback[T]) error {
+	switch any(*new(T)).(type) {
+	case uint8:
+		if config.Playback.Format != FormatUint8 {
+			return ErrFormatNotSupported
+		}
+	case int16:
+		if config.Playback.Format != FormatInt16 {
+			return ErrFormatNotSupported
+		}
+	case int32:
+		if config.Playback.Format != FormatInt32 {
+			return ErrFormatNotSupported
+		}
+	case float32:
+		if config.Playback.Format != FormatFloat32 {
+			return ErrFormatNotSupported
+		}
+	default:
+		return ErrFormatNotSupported
+	}
+
 	config.dataCallback.Store(uintptr(unsafe.Pointer(&callback)))
+
+	return nil
 }
 
-func SetCaptureCallback[T Formats](config *DeviceConfig, callback CaptureCallback[T]) {
+func SetCaptureCallback[T Formats](config *DeviceConfig, callback CaptureCallback[T]) error {
+	switch any(*new(T)).(type) {
+	case uint8:
+		if config.Capture.Format != FormatUint8 {
+			return ErrFormatNotSupported
+		}
+	case int16:
+		if config.Capture.Format != FormatInt16 {
+			return ErrFormatNotSupported
+		}
+	case int32:
+		if config.Capture.Format != FormatInt32 {
+			return ErrFormatNotSupported
+		}
+	case float32:
+		if config.Capture.Format != FormatFloat32 {
+			return ErrFormatNotSupported
+		}
+	default:
+		return ErrFormatNotSupported
+	}
+
 	config.dataCallback.Store(uintptr(unsafe.Pointer(&callback)))
+
+	return nil
 }
 
-func SetDuplexCallback[P, C Formats](config *DeviceConfig, callback DuplexCallback[P, C]) {
+func SetDuplexCallback[P, C Formats](config *DeviceConfig, callback DuplexCallback[P, C]) error {
+	switch any(*new(P)).(type) {
+	case uint8:
+		switch any(*new(C)).(type) {
+		case uint8:
+			if config.Playback.Format != FormatUint8 || config.Capture.Format != FormatUint8 {
+				return ErrFormatNotSupported
+			}
+		case int16:
+			if config.Playback.Format != FormatUint8 || config.Capture.Format != FormatInt16 {
+				return ErrFormatNotSupported
+			}
+		case int32:
+			if config.Playback.Format != FormatUint8 || config.Capture.Format != FormatInt32 {
+				return ErrFormatNotSupported
+			}
+		case float32:
+			if config.Playback.Format != FormatUint8 || config.Capture.Format != FormatFloat32 {
+				return ErrFormatNotSupported
+			}
+		default:
+			return ErrFormatNotSupported
+		}
+	case int16:
+		switch any(*new(C)).(type) {
+		case uint8:
+			if config.Playback.Format != FormatInt16 || config.Capture.Format != FormatUint8 {
+				return ErrFormatNotSupported
+			}
+		case int16:
+			if config.Playback.Format != FormatInt16 || config.Capture.Format != FormatInt16 {
+				return ErrFormatNotSupported
+			}
+		case int32:
+			if config.Playback.Format != FormatInt16 || config.Capture.Format != FormatInt32 {
+				return ErrFormatNotSupported
+			}
+		case float32:
+			if config.Playback.Format != FormatInt16 || config.Capture.Format != FormatFloat32 {
+				return ErrFormatNotSupported
+			}
+		default:
+			return ErrFormatNotSupported
+		}
+	case int32:
+		switch any(*new(C)).(type) {
+		case uint8:
+			if config.Playback.Format != FormatInt32 || config.Capture.Format != FormatUint8 {
+				return ErrFormatNotSupported
+			}
+		case int16:
+			if config.Playback.Format != FormatInt32 || config.Capture.Format != FormatInt16 {
+				return ErrFormatNotSupported
+			}
+		case int32:
+			if config.Playback.Format != FormatInt32 || config.Capture.Format != FormatInt32 {
+				return ErrFormatNotSupported
+			}
+		case float32:
+			if config.Playback.Format != FormatInt32 || config.Capture.Format != FormatFloat32 {
+				return ErrFormatNotSupported
+			}
+		default:
+			return ErrFormatNotSupported
+		}
+	case float32:
+		switch any(*new(C)).(type) {
+		case uint8:
+			if config.Playback.Format != FormatFloat32 || config.Capture.Format != FormatUint8 {
+				return ErrFormatNotSupported
+			}
+		case int16:
+			if config.Playback.Format != FormatFloat32 || config.Capture.Format != FormatInt16 {
+				return ErrFormatNotSupported
+			}
+		case int32:
+			if config.Playback.Format != FormatFloat32 || config.Capture.Format != FormatInt32 {
+				return ErrFormatNotSupported
+			}
+		case float32:
+			if config.Playback.Format != FormatFloat32 || config.Capture.Format != FormatFloat32 {
+				return ErrFormatNotSupported
+			}
+		default:
+			return ErrFormatNotSupported
+		}
+	default:
+		return ErrFormatNotSupported
+	}
+
 	config.dataCallback.Store(uintptr(unsafe.Pointer(&callback)))
+
+	return nil
 }
 
 type dataCallback func(device *ma.Device, output, input unsafe.Pointer, frameCount uint32) uintptr
