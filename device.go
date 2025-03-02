@@ -1,6 +1,7 @@
 package miniaudio
 
 import (
+	"math"
 	"sync/atomic"
 
 	"github.com/samborkent/miniaudio/internal/ma"
@@ -15,7 +16,7 @@ type Device struct {
 	initialized atomic.Bool
 }
 
-func NewDevice[T Formats](config DeviceConfig[T]) (*Device, error) {
+func NewDevice(config *DeviceConfig) (*Device, error) {
 	if !initialized.Load() {
 		return nil, ErrNotInitialized
 	}
@@ -26,16 +27,17 @@ func NewDevice[T Formats](config DeviceConfig[T]) (*Device, error) {
 		return nil, ErrDeviceTypeUnknown
 	}
 
-	if config.DeviceType == DeviceTypePlayback ||
-		config.DeviceType == DeviceTypeDuplex {
-		if config.PlaybackCallback == nil {
-			return nil, ErrNilPlaybackCallback
-		}
-	} else if config.DeviceType == DeviceTypeCapture ||
-		config.DeviceType == DeviceTypeDuplex {
-		if config.PlaybackCallback == nil {
-			return nil, ErrNilCaptureCallback
-		}
+	if config.SampleRate < 0 || config.SampleRate > math.MaxUint32 {
+		return nil, ErrSampleRateInvalid
+	}
+
+	if config.Playback.Channels < 0 || config.Playback.Channels > ma.MaxChannels ||
+		config.Capture.Channels < 0 || config.Capture.Channels > ma.MaxChannels {
+		return nil, ErrChannelsInvalid
+	}
+
+	if config.dataCallback.Load() == 0 {
+		return nil, ErrNilCallback
 	}
 
 	cfg, err := config.toMA()

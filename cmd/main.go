@@ -13,34 +13,34 @@ import (
 const bufferSize = 2048
 
 type sampleBuffer struct {
-	samples [][]int16
+	samples [][]float32
 }
 
 var samplePool = sync.Pool{
 	New: func() any {
 		return &sampleBuffer{
-			samples: make([][]int16, 0, bufferSize),
+			samples: make([][]float32, 0, bufferSize),
 		}
 	},
 }
 
-var transferChannel = make(chan int16, bufferSize)
+var transferChannel = make(chan float32, bufferSize)
 
-func captureCallback(inputSamples []int16, frameCount, channelCount int) {
+func captureCallback(inputSamples []float32, frameCount, channelCount int) {
 	for _, sample := range inputSamples {
 		transferChannel <- sample
 	}
 }
 
-func playbackBallback(frameCount, channelCount int) [][]int16 {
+func playbackBallback(frameCount, channelCount int) [][]float32 {
 	buffer := samplePool.Get()
 
 	samples, _ := buffer.(*sampleBuffer)
 	clear(samples.samples)
-	samples.samples = make([][]int16, frameCount)
+	samples.samples = make([][]float32, frameCount)
 
 	for i := range frameCount {
-		samples.samples[i] = make([]int16, channelCount)
+		samples.samples[i] = make([]float32, channelCount)
 
 		sample := <-transferChannel
 
@@ -52,6 +52,11 @@ func playbackBallback(frameCount, channelCount int) [][]int16 {
 	samplePool.Put(samples)
 
 	return samples.samples
+}
+
+func duplexCallback(inputSamples []float32, frameCount, playbackChannels, captureChannels int) [][]float32 {
+	go captureCallback(inputSamples, frameCount, captureChannels)
+	return playbackBallback(frameCount, playbackChannels)
 }
 
 func main() {
@@ -84,11 +89,21 @@ func main() {
 		slog.Any("capture", captureDevices),
 	)
 
-	device, err := miniaudio.NewDevice(miniaudio.DeviceConfig[int16]{
-		DeviceType:       miniaudio.DeviceTypeDuplex,
-		PlaybackCallback: playbackBallback,
-		CaptureCallback:  captureCallback,
-	})
+	deviceConfig := miniaudio.DeviceConfig{
+		DeviceType: miniaudio.DeviceTypeDuplex,
+		// Playback: miniaudio.FormatConfig{
+		// 	Format:   miniaudio.FormatFloat32,
+		// 	Channels: 2,
+		// },
+		// Capture: miniaudio.FormatConfig{
+		// 	Format:   miniaudio.FormatFloat32,
+		// 	Channels: 1,
+		// },
+	}
+
+	miniaudio.SetDuplexCallback(&deviceConfig, duplexCallback)
+
+	device, err := miniaudio.NewDevice(&deviceConfig)
 	if err != nil {
 		slog.ErrorContext(ctx, "creating new device: "+err.Error())
 		return

@@ -15,6 +15,21 @@ const (
 	FormatFloat32 Format = "float32"
 )
 
+func (f Format) toMA() ma.Format {
+	switch f {
+	case FormatUint8:
+		return ma.FormatU8
+	case FormatInt16:
+		return ma.FormatS16
+	case FormatInt32:
+		return ma.FormatS32
+	case FormatFloat32:
+		return ma.FormatF32
+	default:
+		return ma.FormatUnknown
+	}
+}
+
 func formatFromMA(format ma.Format) Format {
 	switch format {
 	case ma.FormatU8:

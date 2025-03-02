@@ -1,92 +1,68 @@
 package miniaudio
 
 import (
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
 	"github.com/samborkent/miniaudio/internal/ma"
 )
 
-type (
-	PlaybackCallback[T Formats] func(frameCount, channelCount int) [][]T
-	CaptureCallback[T Formats]  func(inputSamples []T, frameCount, channelCount int)
-)
+type DeviceConfig struct {
+	DeviceType DeviceType
+	SampleRate int
+	Playback   FormatConfig
+	Capture    FormatConfig
 
-type DeviceConfig[T Formats] struct {
-	DeviceType       DeviceType
-	PlaybackCallback PlaybackCallback[T]
-	CaptureCallback  CaptureCallback[T]
+	dataCallback atomic.Uintptr
 }
 
-func (c DeviceConfig[T]) toMA() (*ma.DeviceConfig, error) {
+type FormatConfig struct {
+	Format   Format
+	Channels int
+}
+
+func (c *DeviceConfig) toMA() (*ma.DeviceConfig, error) {
 	config := new(ma.DeviceConfig)
 
 	config.DeviceType = c.DeviceType.toMA()
-	config.SampleRate = 48000
+	config.SampleRate = uint32(c.SampleRate)
+	config.Playback.Format = c.Playback.Format.toMA()
 
-	switch any(*new(T)).(type) {
-	case uint8:
-		config.Playback.Format = ma.FormatU8
-		config.Capture.Format = ma.FormatU8
-	case int16:
-		config.Playback.Format = ma.FormatS16
-		config.Capture.Format = ma.FormatS16
-	case int32:
-		config.Playback.Format = ma.FormatS32
-		config.Capture.Format = ma.FormatS32
-	case float32:
-		config.Playback.Format = ma.FormatF32
-		config.Capture.Format = ma.FormatF32
+	playbackChannels := 0
+	if c.Playback.Channels > 0 && c.Playback.Channels <= ma.MaxChannels {
+		playbackChannels = c.Playback.Channels
 	}
 
-	if c.DeviceType == DeviceTypePlayback || c.DeviceType == DeviceTypeDuplex {
-		config.Playback.Channels = 2
+	config.Playback.Channels = uint32(playbackChannels)
+
+	config.Capture.Format = c.Capture.Format.toMA()
+
+	captureChannels := 0
+	if c.Capture.Channels > 0 && c.Capture.Channels <= ma.MaxChannels {
+		captureChannels = c.Capture.Channels
 	}
 
-	if c.DeviceType == DeviceTypeCapture || c.DeviceType == DeviceTypeDuplex {
-		config.Capture.Channels = 1
-	}
+	config.Capture.Channels = uint32(captureChannels)
 
 	var dataCallback func(device *ma.Device, output, input unsafe.Pointer, frameCount uint32) uintptr
+	var err error
 
 	switch c.DeviceType {
 	case DeviceTypePlayback:
-		dataCallback = func(_ *ma.Device, output, _ unsafe.Pointer, frameCount uint32) uintptr {
-			outputSamples := unsafe.Slice((*T)(output), frameCount*config.Playback.Channels)
-
-			gotSamples := c.PlaybackCallback(int(frameCount), int(config.Playback.Channels))
-
-			for i := range frameCount {
-				for c := range config.Playback.Channels {
-					outputSamples[i*config.Playback.Channels+c] = gotSamples[i][c]
-				}
-			}
-
-			return 0
+		dataCallback, err = c.playbackCallback()
+		if err != nil {
+			return nil, err
 		}
 	case DeviceTypeCapture:
-		dataCallback = func(_ *ma.Device, _, input unsafe.Pointer, frameCount uint32) uintptr {
-			inputSamples := unsafe.Slice((*T)(input), frameCount*config.Capture.Channels)
-
-			c.CaptureCallback(inputSamples, int(frameCount), int(config.Capture.Channels))
-
-			return 0
+		dataCallback, err = c.captureCallback()
+		if err != nil {
+			return nil, err
 		}
 	case DeviceTypeDuplex:
-		dataCallback = func(_ *ma.Device, output, input unsafe.Pointer, frameCount uint32) uintptr {
-			inputSamples := unsafe.Slice((*T)(input), frameCount*config.Capture.Channels)
-			outputSamples := unsafe.Slice((*T)(output), frameCount*config.Playback.Channels)
-
-			go c.CaptureCallback(inputSamples, int(frameCount), int(config.Playback.Channels))
-			gotSamples := c.PlaybackCallback(int(frameCount), int(config.Playback.Channels))
-
-			for i := range frameCount {
-				for c := range config.Playback.Channels {
-					outputSamples[i*config.Playback.Channels+c] = gotSamples[i][c]
-				}
-			}
-
-			return 0
+		dataCallback, err = c.duplexCallback()
+		if err != nil {
+			return nil, err
 		}
 	default:
 		return nil, ErrDeviceTypeNotSupported
