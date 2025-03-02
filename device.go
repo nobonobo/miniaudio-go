@@ -1,7 +1,6 @@
 package miniaudio
 
 import (
-	"log/slog"
 	"math"
 	"sync/atomic"
 
@@ -67,63 +66,36 @@ func (d *Device) Init() error {
 	d.device = &device
 	d.initialized.Store(true)
 
-	if (d.Config.DeviceType == DeviceTypePlayback ||
-		d.Config.DeviceType == DeviceTypeDuplex) &&
-		d.config.Playback.Channels == 0 {
-		playbackInfo, err := d.PlaybackInfo()
-		if err != nil {
-			return err
-		}
+	return nil
+}
 
-		if len(playbackInfo.DataFormats) == 0 {
-			return ErrChannelsUnknown
-		}
-
-		if len(playbackInfo.DataFormats) > 1 {
-			slog.Warn("multiple playback formats detected!")
-		}
-
-		d.Config.Playback.Channels = playbackInfo.DataFormats[0].Channels
+func (d *Device) InitWithContext(context *Context) error {
+	if !initialized.Load() {
+		return ErrNotInitialized
 	}
 
-	if (d.Config.DeviceType == DeviceTypeCapture ||
-		d.Config.DeviceType == DeviceTypeDuplex) &&
-		d.config.Capture.Channels == 0 {
-		captureInfo, err := d.CaptureInfo()
-		if err != nil {
-			return err
-		}
+	var device ma.Device
 
-		if len(captureInfo.DataFormats) == 0 {
-			return ErrChannelsUnknown
-		}
-
-		if len(captureInfo.DataFormats) > 1 {
-			slog.Warn("multiple capture formats detected!")
-		}
-
-		d.Config.Capture.Channels = captureInfo.DataFormats[0].Channels
+	result := maDeviceInit(context.context, d.config, &device)
+	if result != ma.Success {
+		return convertResult(result)
 	}
+
+	d.device = &device
+	d.initialized.Store(true)
 
 	return nil
 }
 
 func (d *Device) PlaybackInfo() (DeviceInfo, error) {
-	if !d.initialized.Load() {
-		return DeviceInfo{}, ErrDeviceNotInitialized
-	}
-
-	var deviceInfo ma.DeviceInfo
-
-	result := maDeviceGetInfo(d.device, ma.DeviceTypePlayback, &deviceInfo)
-	if result != ma.Success {
-		return DeviceInfo{}, convertResult(result)
-	}
-
-	return deviceInfoFromMA(deviceInfo), nil
+	return d.deviceInfo(DeviceTypePlayback)
 }
 
 func (d *Device) CaptureInfo() (DeviceInfo, error) {
+	return d.deviceInfo(DeviceTypeCapture)
+}
+
+func (d *Device) deviceInfo(deviceType DeviceType) (DeviceInfo, error) {
 	if !d.initialized.Load() {
 		return DeviceInfo{}, ErrDeviceNotInitialized
 	}

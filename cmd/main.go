@@ -13,34 +13,34 @@ import (
 const bufferSize = 2048
 
 type sampleBuffer struct {
-	samples [][]float32
+	samples [][]int16
 }
 
 var samplePool = sync.Pool{
 	New: func() any {
 		return &sampleBuffer{
-			samples: make([][]float32, 0, bufferSize),
+			samples: make([][]int16, 0, bufferSize),
 		}
 	},
 }
 
-var transferChannel = make(chan float32, bufferSize)
+var transferChannel = make(chan int16, bufferSize)
 
-func captureCallback(inputSamples []float32, frameCount, channelCount int) {
+func captureCallback(inputSamples []int16, frameCount, channelCount int) {
 	for _, sample := range inputSamples {
 		transferChannel <- sample
 	}
 }
 
-func playbackBallback(frameCount, channelCount int) [][]float32 {
+func playbackBallback(frameCount, channelCount int) [][]int16 {
 	buffer := samplePool.Get()
 
 	samples, _ := buffer.(*sampleBuffer)
 	clear(samples.samples)
-	samples.samples = make([][]float32, frameCount)
+	samples.samples = make([][]int16, frameCount)
 
 	for i := range frameCount {
-		samples.samples[i] = make([]float32, channelCount)
+		samples.samples[i] = make([]int16, channelCount)
 
 		sample := <-transferChannel
 
@@ -54,7 +54,7 @@ func playbackBallback(frameCount, channelCount int) [][]float32 {
 	return samples.samples
 }
 
-func duplexCallback(inputSamples []float32, frameCount, playbackChannels, captureChannels int) [][]float32 {
+func duplexCallback(inputSamples []int16, frameCount, playbackChannels, captureChannels int) [][]int16 {
 	go captureCallback(inputSamples, frameCount, captureChannels)
 	return playbackBallback(frameCount, playbackChannels)
 }
@@ -76,28 +76,55 @@ func main() {
 	}
 	defer context.Uninit()
 
-	slog.Info("initialized context", slog.Any("context", context))
+	slog.DebugContext(ctx, "initialized context", slog.Any("context", context))
 
-	playbackDevices, captureDevices, err := context.GetDevices()
+	playbackInfo, err := context.GetDefaultPlayback()
 	if err != nil {
-		slog.ErrorContext(ctx, "getting device info: "+err.Error())
+		slog.ErrorContext(ctx, "getting playback device: "+err.Error())
 		return
 	}
 
-	slog.InfoContext(ctx, "Device info",
-		slog.Any("playback", playbackDevices),
-		slog.Any("capture", captureDevices),
-	)
+	playbackInfo, err = context.GetDeviceInfo(miniaudio.DeviceTypePlayback, playbackInfo.ID)
+	if err != nil {
+		slog.ErrorContext(ctx, "getting playback device info: "+err.Error())
+		return
+	}
+
+	slog.InfoContext(ctx, "Device info", slog.Any("playback", playbackInfo))
+
+	captureInfo, err := context.GetDefaultCapture()
+	if err != nil {
+		slog.ErrorContext(ctx, "getting capture device: "+err.Error())
+		return
+	}
+
+	captureInfo, err = context.GetDeviceInfo(miniaudio.DeviceTypeCapture, captureInfo.ID)
+	if err != nil {
+		slog.ErrorContext(ctx, "getting capture device info: "+err.Error())
+		return
+	}
+
+	slog.InfoContext(ctx, "Device info", slog.Any("capture", captureInfo))
+
+	if len(playbackInfo.DataFormats) != 1 {
+		slog.ErrorContext(ctx, "more than one native playback format")
+		return
+	}
+
+	if len(captureInfo.DataFormats) != 1 {
+		slog.ErrorContext(ctx, "more than one native capture format")
+		return
+	}
 
 	deviceConfig := miniaudio.DeviceConfig{
 		DeviceType: miniaudio.DeviceTypeDuplex,
 		Playback: miniaudio.FormatConfig{
-			Format: miniaudio.FormatFloat32,
-			// Channels: 2,
+			Format:   playbackInfo.DataFormats[0].Format,
+			Channels: playbackInfo.DataFormats[0].Channels,
 		},
 		Capture: miniaudio.FormatConfig{
-			Format: miniaudio.FormatFloat32,
-			// Channels: 1,
+			Format:   captureInfo.DataFormats[0].Format,
+			Channels: captureInfo.DataFormats[0].Channels,
 		},
 	}
 
@@ -116,23 +143,6 @@ func main() {
 	defer device.Uninit()
 
 	slog.Info("initialized device", slog.Any("device", device))
-
-	playbackInfo, err := device.PlaybackInfo()
-	if err != nil {
-		slog.ErrorContext(ctx, "getting playback device info: "+err.Error())
-		return
-	}
-
-	captureInfo, err := device.CaptureInfo()
-	if err != nil {
-		slog.ErrorContext(ctx, "getting capture device info: "+err.Error())
-		return
-	}
-
-	slog.Info("device info",
-		slog.Any("playback", playbackInfo),
-		slog.Any("capture", captureInfo),
-	)
 
 	if err := device.Start(); err != nil {
 		slog.ErrorContext(ctx, "starting device: "+err.Error())

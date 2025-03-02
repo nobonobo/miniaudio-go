@@ -4,7 +4,6 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/samborkent/miniaudio/internal/cutil"
 	"github.com/samborkent/miniaudio/internal/ma"
 )
 
@@ -63,57 +62,84 @@ func (c *Context) GetDevices() (playbackDevices, captureDevices []DeviceInfo, er
 	playbackDevices = make([]DeviceInfo, len(maPlaybackDevices))
 
 	for i := range pCount {
-		var isDefault bool
-
-		if maPlaybackDevices[i].IsDefault > 0 {
-			isDefault = true
-		}
-
-		playbackDevices[i] = DeviceInfo{
-			ID:          cutil.String(maPlaybackDevices[i].ID[:]),
-			Name:        cutil.String(maPlaybackDevices[i].Name[:]),
-			IsDefault:   isDefault,
-			DataFormats: make([]DataFormat, maPlaybackDevices[i].NativeDataFormatCount),
-		}
-
-		for j := range maPlaybackDevices[i].NativeDataFormatCount {
-			playbackDevices[i].DataFormats[j] = DataFormat{
-				Format:     formatFromMA(maPlaybackDevices[i].NativeDataFormats[j].Format),
-				Channels:   int(maPlaybackDevices[i].NativeDataFormats[j].Channels),
-				SampleRate: int(maPlaybackDevices[i].NativeDataFormats[j].SampleRate),
-				Flags:      maPlaybackDevices[i].NativeDataFormats[j].Flags,
-			}
-		}
+		playbackDevices[i] = deviceInfoFromMA(maPlaybackDevices[i])
 	}
 
-	maCapturePlaybackDevices := unsafe.Slice(cDevices, cCount)
-	captureDevices = make([]DeviceInfo, len(maCapturePlaybackDevices))
+	maCaptureDevices := unsafe.Slice(cDevices, cCount)
+	captureDevices = make([]DeviceInfo, len(maCaptureDevices))
 
 	for i := range cCount {
-		var isDefault bool
-
-		if maCapturePlaybackDevices[i].IsDefault > 0 {
-			isDefault = true
-		}
-
-		captureDevices[i] = DeviceInfo{
-			ID:          cutil.String(maCapturePlaybackDevices[i].ID[:]),
-			Name:        cutil.String(maCapturePlaybackDevices[i].Name[:]),
-			IsDefault:   isDefault,
-			DataFormats: make([]DataFormat, maCapturePlaybackDevices[i].NativeDataFormatCount),
-		}
-
-		for j := range maCapturePlaybackDevices[i].NativeDataFormatCount {
-			playbackDevices[i].DataFormats[j] = DataFormat{
-				Format:     formatFromMA(maCapturePlaybackDevices[i].NativeDataFormats[j].Format),
-				Channels:   int(maCapturePlaybackDevices[i].NativeDataFormats[j].Channels),
-				SampleRate: int(maCapturePlaybackDevices[i].NativeDataFormats[j].SampleRate),
-				Flags:      maCapturePlaybackDevices[i].NativeDataFormats[j].Flags,
-			}
-		}
+		captureDevices[i] = deviceInfoFromMA(maCaptureDevices[i])
 	}
 
 	return playbackDevices, captureDevices, nil
+}
+
+func (c *Context) GetDefaultPlayback() (DeviceInfo, error) {
+	if !c.initialized.Load() {
+		return DeviceInfo{}, ErrContextNotInitialized
+	}
+
+	pDevices := &ma.DeviceInfo{}
+
+	var pCount uint32
+
+	result := maContextGetDevices(c.context, &pDevices, &pCount, nil, nil)
+	if result != ma.Success {
+		return DeviceInfo{}, convertResult(result)
+	}
+
+	maPlaybackDevices := unsafe.Slice(pDevices, pCount)
+
+	for i := range pCount {
+		if maPlaybackDevices[i].IsDefault > 0 {
+			return deviceInfoFromMA(maPlaybackDevices[i]), nil
+		}
+	}
+
+	return DeviceInfo{}, ErrNoDefaultDevice
+}
+
+func (c *Context) GetDefaultCapture() (DeviceInfo, error) {
+	if !c.initialized.Load() {
+		return DeviceInfo{}, ErrContextNotInitialized
+	}
+
+	cDevices := &ma.DeviceInfo{}
+
+	var cCount uint32
+
+	result := maContextGetDevices(c.context, nil, nil, &cDevices, &cCount)
+	if result != ma.Success {
+		return DeviceInfo{}, convertResult(result)
+	}
+
+	maCaptureDevices := unsafe.Slice(cDevices, cCount)
+
+	for i := range cCount {
+		if maCaptureDevices[i].IsDefault > 0 {
+			return deviceInfoFromMA(maCaptureDevices[i]), nil
+		}
+	}
+
+	return DeviceInfo{}, ErrNoDefaultDevice
+}
+
+func (c *Context) GetDeviceInfo(deviceType DeviceType, deviceID string) (DeviceInfo, error) {
+	if !c.initialized.Load() {
+		return DeviceInfo{}, ErrContextNotInitialized
+	}
+
+	var deviceInfo ma.DeviceInfo
+
+	maDeviceID := deviceIDToMA(deviceID)
+
+	result := maContextGetDeviceInfo(c.context, deviceType.toMA(), &maDeviceID, &deviceInfo)
+	if result != ma.Success {
+		return DeviceInfo{}, convertResult(result)
+	}
+
+	return deviceInfoFromMA(deviceInfo), nil
 }
 
 func (c *Context) Uninit() {

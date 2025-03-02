@@ -17,5 +17,4 @@ Initial focus is on Linux & Windows operating systems with `amd64` architecture.
 
 ## TODO
 
-- Find way to set data callback after device init, so format & channels can be read from device info.
 - Generate intermittant C file after macros.

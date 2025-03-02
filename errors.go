@@ -15,4 +15,5 @@ var (
 	ErrFormatNotSupported     = errors.New("miniaudio: format not supported")
 	ErrDeviceNotInitialized   = errors.New("miniaudio: device not initialized")
 	ErrDeviceTypeNotSupported = errors.New("miniaudio: device type not supported")
+	ErrNoDefaultDevice        = errors.New("miniaudio: no default device found")
 )

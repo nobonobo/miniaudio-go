@@ -44,3 +44,19 @@ func deviceInfoFromMA(deviceInfo ma.DeviceInfo) DeviceInfo {
 
 	return di
 }
+
+func deviceIDToMA(deviceID string) ma.DeviceID {
+	var maDeviceID ma.DeviceID
+
+	idBytes := []byte(deviceID)
+
+	if len(idBytes) > 254 {
+		idBytes = idBytes[:254]
+	}
+
+	idBytes = append(idBytes, '\x00')
+
+	copy(maDeviceID[:], idBytes)
+
+	return maDeviceID
+}

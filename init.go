@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	maContextInit       func(backends []ma.Backend, backendCount uint32, config *ma.ContextConfig, context *ma.Context) ma.Result
-	maContextGetDevices func(context *ma.Context, playbackDevices **ma.DeviceInfo, playbackDeviceCount *uint32, captureDevices **ma.DeviceInfo, captureDeviceCount *uint32) ma.Result
-	maContextUninit     func(context *ma.Context)
+	maContextInit          func(backends []ma.Backend, backendCount uint32, config *ma.ContextConfig, context *ma.Context) ma.Result
+	maContextGetDevices    func(context *ma.Context, playbackDevices **ma.DeviceInfo, playbackDeviceCount *uint32, captureDevices **ma.DeviceInfo, captureDeviceCount *uint32) ma.Result
+	maContextGetDeviceInfo func(context *ma.Context, deviceType ma.DeviceType, deviceID *ma.DeviceID, deviceInfo *ma.DeviceInfo) ma.Result
+	maContextUninit        func(context *ma.Context)
 
 	maDeviceConfigInit func(deviceConfig *ma.DeviceConfig, deviceType ma.DeviceType)
 	maDeviceInit       func(context *ma.Context, config *ma.DeviceConfig, device *ma.Device) ma.Result
@@ -43,6 +44,7 @@ func Init() error {
 
 			purego.RegisterLibFunc(&maContextInit, lib, "ma_context_init")
 			purego.RegisterLibFunc(&maContextGetDevices, lib, "ma_context_get_devices")
+			purego.RegisterLibFunc(&maContextGetDeviceInfo, lib, "ma_context_get_device_info")
 			purego.RegisterLibFunc(&maContextUninit, lib, "ma_context_uninit")
 			purego.RegisterLibFunc(&maDeviceConfigInit, lib, "ma_device_config_init")
 			purego.RegisterLibFunc(&maDeviceInit, lib, "ma_device_init")
