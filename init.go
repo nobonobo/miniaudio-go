@@ -3,13 +3,24 @@
 package miniaudio
 
 import (
+	"embed"
 	"fmt"
+	"io"
+	"os"
+	"path"
+	"runtime"
+	"strings"
 	"sync"
 	"sync/atomic"
 
 	"github.com/ebitengine/purego"
 	"github.com/samborkent/miniaudio/internal/ma"
 )
+
+//go:embed build/*
+var buildEmbed embed.FS
+
+const rootDir = "build"
 
 var (
 	maContextInit          func(backends []ma.Backend, backendCount uint32, config *ma.ContextConfig, context *ma.Context) ma.Result
@@ -36,9 +47,63 @@ var (
 func Init() error {
 	if !initialized.Load() {
 		initOnce.Do(func() {
-			lib, err := openLibrary()
+			dirEntries, err := buildEmbed.ReadDir(rootDir)
 			if err != nil {
-				initErr.Store(fmt.Errorf("miniaudio: opening library: %w", err))
+				initErr.Store(fmt.Errorf("reading embedded directory: %w", err))
+				return
+			}
+
+			var lib uintptr
+
+			for _, dirEntry := range dirEntries {
+				if dirEntry.IsDir() {
+					continue
+				}
+
+				if !strings.Contains(dirEntry.Name(), runtime.GOOS) {
+					continue
+				}
+
+				if !strings.Contains(dirEntry.Name(), runtime.GOARCH) {
+					continue
+				}
+
+				tmpFile, err := os.CreateTemp("", dirEntry.Name())
+				if err != nil {
+					initErr.Store(fmt.Errorf("creating temporary file: %w", err))
+					return
+				}
+
+				defer func() {
+					if err := os.Remove(tmpFile.Name()); err != nil {
+						initErr.Store(fmt.Errorf("removing temporary file: %w", err))
+						return
+					}
+				}()
+
+				libFile, err := buildEmbed.Open(path.Join(rootDir, dirEntry.Name()))
+				if err != nil {
+					initErr.Store(fmt.Errorf("opening embedded library file: %w", err))
+					return
+				}
+
+				_, err = io.Copy(tmpFile, libFile)
+				if err != nil {
+					initErr.Store(fmt.Errorf("writing library contents to temporary file: %w", err))
+					return
+				}
+
+				lib, err = openLibrary(tmpFile.Name())
+				if err != nil {
+					initErr.Store(fmt.Errorf("loading shared library: %w", err))
+					return
+				}
+
+				break
+			}
+
+			if lib == 0 {
+				initErr.Store(ErrLibraryNotFound)
 				return
 			}
 
@@ -62,7 +127,7 @@ func Init() error {
 	if errAny != nil {
 		err, ok := errAny.(error)
 		if ok {
-			return err
+			return fmt.Errorf("miniaudio: %w", err)
 		}
 	}
 

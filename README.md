@@ -16,5 +16,4 @@ The current scope of the project is not to provide one-to-one feature parity wit
 Initial focus is on Linux & Windows operating systems with `amd64` architecture.
 
 ## TODO
-
-- Generate intermittant C file after macros.
+- Look into contributing go:embed support to purego.
