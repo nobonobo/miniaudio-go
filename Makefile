@@ -22,8 +22,8 @@ build-windows-arm64:
 
 build-darwin-amd64:
 	mkdir -p tmp build
-	zig cc -target x86_64-macos -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -fmodules -framework CoreAudio -c -fPIC pkg/main_darwin.c -o tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-amd64.o
-	zig cc -target x86_64-macos -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -fmodules -framework CoreAudio  -shared tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-amd64.o -o build/libminiaudio-$(MINIAUDIO_VERSION)-darwin-amd64.dylib
+	zig cc -target x86_64-macos -isysroot $${SDK_PATH} -F$${SDK_PATH}/System/Library/Frameworks -framework CoreAudio -c -fPIC pkg/main_darwin.c -o tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-amd64.o
+	zig cc -target x86_64-macos -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -F$${SDK_PATH}/System/Library/Frameworks -framework CoreAudio  -shared tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-amd64.o -o build/libminiaudio-$(MINIAUDIO_VERSION)-darwin-amd64.dylib
 
 build-darwin-arm64:
 	mkdir -p tmp build

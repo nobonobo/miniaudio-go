@@ -61,6 +61,10 @@ jobs:
       - name: Show Zig version
         run: zig version
 
+      - name: Set SDK_PATH on macOS only
+        if: runner.os == 'macos'
+        run: echo "SDK_PATH=$(xcrun --sdk macosx --show-sdk-path)" >> $GITHUB_ENV
+
       - name: Build with zig cc (${{ matrix.os }}/${ { matrix.arch } })
         run: |
           make CC="zig cc -target ${{ matrix.arch }}-${{ matrix.target }}" \
