@@ -1,4 +1,4 @@
-MINIAUDIO_VERSION=$(shell git -C pkg/miniaudio describe --tags)
+MINIAUDIO_VERSION=$(shell git -C pkg/miniaudio describe --tags --always)
 
 build-linux-amd64:
 	mkdir -p tmp build
