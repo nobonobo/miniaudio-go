@@ -27,8 +27,8 @@ build-darwin-amd64:
 
 build-darwin-arm64:
 	mkdir -p tmp build
-	zig cc -target aarch64-macos -c -fPIC pkg/main_darwin.c -o tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.o
-	zig cc -target aarch64-macos -shared tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.o -o build/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.dylib
+	zig cc -target aarch64-macos -isysroot $${SDK_PATH} -F$${SDK_PATH}/System/Library/Frameworks -framework CoreAudio -c -fPIC pkg/main_darwin.c -o tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.o
+	zig cc -target aarch64-macos -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -F$${SDK_PATH}/System/Library/Frameworks -framework CoreAudio  -shared tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.o -o build/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.dylib
 
 build-all: build-linux-amd64 build-linux-arm64 build-windows-amd64 build-windows-arm64
 
