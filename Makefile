@@ -1,4 +1,5 @@
 MINIAUDIO_VERSION=$(shell git -C pkg/miniaudio describe --tags --always)
+RELEASE_URL=https://github.com/nobonobo/miniaudio-go/releases/download/latest/
 
 clean:
 
@@ -34,6 +35,16 @@ build-darwin-arm64:
 	zig cc -target aarch64-macos -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -F$${SDK_PATH}/System/Library/Frameworks -framework CoreAudio  -shared tmp/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.o -o build/libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.dylib
 
 build-all: build-linux-amd64 build-linux-arm64 build-windows-amd64 build-windows-arm64
+
+download:
+	mkdir -p build
+	m-rf build/*
+	cd build && curl -LO $(RELEASE_URL)libminiaudio-$(MINIAUDIO_VERSION)-linux-amd64.dll
+	cd build && curl -LO $(RELEASE_URL)libminiaudio-$(MINIAUDIO_VERSION)-linux-arm64.dll
+	cd build && curl -LO $(RELEASE_URL)libminiaudio-$(MINIAUDIO_VERSION)-windows-amd64.dll
+	cd build && curl -LO $(RELEASE_URL)libminiaudio-$(MINIAUDIO_VERSION)-windows-arm64.dll
+	cd build && curl -LO $(RELEASE_URL)libminiaudio-$(MINIAUDIO_VERSION)-darwin-amd64.dll
+	cd build && curl -LO $(RELEASE_URL)libminiaudio-$(MINIAUDIO_VERSION)-darwin-arm64.dll
 
 build:
 	CGO_ENABLED=0 go build -o bin/ cmd/main.go
