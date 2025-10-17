@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-
     strategy:
       fail-fast: false
       matrix:
@@ -62,13 +61,8 @@ jobs:
       - name: Show Zig version
         run: zig version
 
-      - name: Determine version
-        id: ver
-        run: echo "VER=$(git -C pkg/miniaudio describe --tags)" >> $GITHUB_ENV
-
       - name: Build with zig cc (${{ matrix.os }}/${ { matrix.arch } })
         run: |
-
           make CC="zig cc -target ${{ matrix.arch }}-${{ matrix.target }}" \
                CXX="zig c++ -target ${{ matrix.arch }}-${{ matrix.target }}" \
                AR="zig ar" RANLIB="zig ranlib" build-${{ matrix.name }}-${{ matrix.abi }}
