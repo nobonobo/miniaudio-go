@@ -66,10 +66,7 @@ jobs:
         run: echo "SDK_PATH=$(xcrun --sdk macosx --show-sdk-path)" >> $GITHUB_ENV
 
       - name: Build with zig cc (${{ matrix.os }}/${ { matrix.arch } })
-        run: |
-          make CC="zig cc -target ${{ matrix.arch }}-${{ matrix.target }}" \
-               CXX="zig c++ -target ${{ matrix.arch }}-${{ matrix.target }}" \
-               AR="zig ar" RANLIB="zig ranlib" build-${{ matrix.name }}-${{ matrix.abi }}
+        run: make build-${{ matrix.name }}-${{ matrix.abi }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
