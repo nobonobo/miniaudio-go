@@ -65,6 +65,9 @@ jobs:
         if: runner.os == 'macos'
         run: echo "SDK_PATH=$(xcrun --sdk macosx --show-sdk-path)" >> $GITHUB_ENV
 
+      - name: Clean Build dir
+        run: rm -rf build/*
+
       - name: Build with zig cc (${{ matrix.os }}/${ { matrix.arch } })
         run: make build-${{ matrix.name }}-${{ matrix.abi }}
 
@@ -85,6 +88,6 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          files: release/**/*.dylib
+          files: release/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
