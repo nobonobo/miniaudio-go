@@ -34,12 +34,12 @@ jobs:
             arch: aarch64
             abi: arm64
           # Windows
-          - os: windows-latest
+          - os: ubuntu-latest
             name: windows
             target: windows
             arch: x86_64
             abi: amd64
-          - os: windows-latest
+          - os: ubuntu-latest
             name: windows
             target: windows
             arch: aarch64
